@@ -1,0 +1,39 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="DocuWiz Design System/Introduction" />
+
+# DocuWiz Design System
+
+Welcome to the DocuWiz component library. This Storybook documents every component with all variants, states, edge cases, and breakpoints.
+
+## Design Tokens
+
+All components consume CSS custom properties from `src/styles/tokens.css`.
+
+| Category | Prefix |
+|----------|--------|
+| Colors | `--color-*` |
+| Typography | `--typography-*`, `--font-*` |
+| Spacing | `--space-*` |
+| Shadows | `--shadow-*` |
+| Border Radius | `--radius-*` |
+| Z-Index | `--z-*` |
+
+## Theme
+
+Use the **Theme** toolbar toggle (top right) to switch between `light` and `dark` modes.
+All semantic color tokens update automatically via `[data-theme="dark"]` on `<html>`.
+
+## Breakpoints
+
+| Name | Width |
+|------|-------|
+| mobile | 375px |
+| mobile-l | 428px |
+| tablet | 768px |
+| tablet-l | 1024px |
+| desktop | 1280px |
+| desktop-l | 1440px |
+| widescreen | 1920px |
+
+Use the **Viewport** toolbar to test components at each breakpoint.
