@@ -1,0 +1,98 @@
+.page {
+  padding: 24px;
+  font-family: var(--font-sans);
+  color: var(--color-font-primary);
+  background: var(--color-surface-ground);
+  min-height: 100vh;
+}
+
+.heading {
+  font: var(--typography-h1);
+  margin-bottom: 8px;
+}
+
+.description {
+  font: var(--typography-body-s-regular);
+  color: var(--color-font-tertiary);
+  margin-bottom: 32px;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+.description code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--color-surface-l2);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.column {
+  background: var(--color-gray-100);
+  border: 1.5px solid var(--color-stroke-gray-primary);
+  border-radius: var(--radius-m);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modeTitle {
+  font: var(--typography-h2);
+  color: var(--color-font-primary);
+  text-transform: capitalize;
+}
+
+.surfaceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.surfaceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.surfaceLabel {
+  font: var(--typography-body-xs-medium);
+  color: var(--color-font-tertiary);
+  width: 56px;
+  flex-shrink: 0;
+}
+
+.surface {
+  width: 120px;
+  flex-shrink: 0;
+  background: var(--color-brand-accent);
+  opacity: 0.15;
+  border: 2px solid var(--color-brand-accent);
+  opacity: 1;
+  background: var(--color-accent-blue-tertiary);
+  border-color: var(--color-accent-blue-secondary);
+}
+
+.tokenValue {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-font-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-stroke-gray-primary);
+}

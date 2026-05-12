@@ -145,6 +145,14 @@
   --color-amber-1200: #482900;
 
   --color-brand: #0265dc;
+  /* Brand accent — the interactive/action color.
+     Defaults to --color-brand (single-brand workspaces need no config).
+     Dual-brand workspaces override this with their CTA color (e.g. magenta).
+     Also set --color-brand-accent-hover and --color-brand-accent-pressed
+     when using a custom accent so button states stay on-brand. */
+  --color-brand-accent:         var(--color-brand);
+  --color-brand-accent-hover:   #0255c0;
+  --color-brand-accent-pressed: #024fb5;
 
   /* --- HTTP Methods (Light) --- */
   --color-method-get:     #d0e1fc;
@@ -161,7 +169,7 @@
   --color-font-secondary: var(--color-gray-900);
   --color-font-tertiary:  var(--color-gray-800);
   --color-font-disabled:  var(--color-gray-700);
-  --color-font-link:      var(--color-brand);
+  --color-font-link:      var(--color-brand-accent);
   --color-font-inverse:   var(--color-gray-200);
 
   /* --- Semantic: Icon (Light) --- */
@@ -179,7 +187,7 @@
   --color-stroke-blue:           var(--color-blue-1200);
   --color-stroke-green:          var(--color-green-1200);
   --color-stroke-yellow:         var(--color-yellow-1200);
-  --color-stroke-brand:          var(--color-brand);
+  --color-stroke-brand:          var(--color-brand-accent);
 
   /* --- Semantic: Surface (Light) --- */
   --color-surface-ground:      var(--color-gray-200);
@@ -261,7 +269,7 @@
   --color-fields-border:  #ee77c3;
   --color-fields-text:    #841064;
 
-  /* --- Border Radius --- */
+  /* --- Border Radius — Primitive Scale --- */
   --radius-none: 0px;
   --radius-xs:   4px;
   --radius-s:    8px;
@@ -270,6 +278,19 @@
   --radius-xl:   20px;
   --radius-2xl:  24px;
   --radius-full: 9999px;
+
+  /* --- Border Radius — Semantic (component-role) tokens ---
+     Components use these, never the primitive scale directly.
+     Values here = "smooth" mode (the default/Figma spec).
+     Override per [data-radius] mode below. */
+  --radius-button:  8px;    /* Button, SegmentedButton */
+  --radius-input:   8px;    /* Input, Select, Search, Textarea */
+  --radius-card:    12px;   /* Card, Panel, Surface */
+  --radius-popup:   8px;    /* Dropdown, ContextMenu, Combobox */
+  --radius-overlay: 16px;   /* Modal, Dialog, Sheet, Drawer */
+  --radius-tooltip: 6px;    /* Tooltip, Popover */
+  --radius-avatar:  9999px; /* Avatar, UserIcon — full circle in smooth */
+  --radius-badge:   4px;    /* Badge, Tag, Chip, Label */
 
   /* --- Shadows --- */
   --shadow-100: 0 1px 1px 0 #42424240;
@@ -308,6 +329,48 @@
   --z-modal:   200;
   --z-toast:   300;
   --z-tooltip: 400;
+}
+
+/* ---------------------------------------------------------------------------
+   RADIUS MODES
+   Apply data-radius="sharp|smooth|rounded" on <html>.
+   Smooth is the default (values already set in :root above).
+   --------------------------------------------------------------------------- */
+
+/* Sharp — every surface gets a subtle 2px so nothing looks broken */
+[data-radius='sharp'] {
+  --radius-button:  2px;
+  --radius-input:   2px;
+  --radius-card:    2px;
+  --radius-popup:   2px;
+  --radius-overlay: 2px;
+  --radius-tooltip: 2px;
+  --radius-avatar:  2px;
+  --radius-badge:   2px;
+}
+
+/* Smooth — same as :root defaults, declared explicitly for clarity */
+[data-radius='smooth'] {
+  --radius-button:  8px;
+  --radius-input:   8px;
+  --radius-card:    12px;
+  --radius-popup:   8px;
+  --radius-overlay: 16px;
+  --radius-tooltip: 6px;
+  --radius-avatar:  9999px;
+  --radius-badge:   4px;
+}
+
+/* Rounded — pill buttons, generous curves everywhere */
+[data-radius='rounded'] {
+  --radius-button:  9999px;
+  --radius-input:   12px;
+  --radius-card:    16px;
+  --radius-popup:   12px;
+  --radius-overlay: 20px;
+  --radius-tooltip: 8px;
+  --radius-avatar:  9999px;
+  --radius-badge:   9999px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -365,6 +428,9 @@
   --color-orange-1200: #fdd291;
 
   --color-brand: #5eaaf7;
+  --color-brand-accent:         var(--color-brand);
+  --color-brand-accent-hover:   #7abef8;
+  --color-brand-accent-pressed: #8ecbf9;
 
   /* HTTP Methods flip */
   --color-method-get:     #42536e;

@@ -4,24 +4,24 @@
 
 /* --- Local tokens --- */
 .button {
-  /* Primary */
-  --btn-primary-bg:           var(--color-brand);
-  --btn-primary-bg-hover:     #0255c0;
-  --btn-primary-bg-pressed:   #024fb5;
+  /* Primary — uses brand-accent so dual-brand workspaces get the right CTA color */
+  --btn-primary-bg:           var(--color-brand-accent);
+  --btn-primary-bg-hover:     var(--color-brand-accent-hover);
+  --btn-primary-bg-pressed:   var(--color-brand-accent-pressed);
   --btn-primary-text:         #ffffff;
 
   /* Secondary */
   --btn-secondary-bg:         transparent;
   --btn-secondary-bg-hover:   var(--color-blue-100);
   --btn-secondary-bg-pressed: var(--color-blue-200);
-  --btn-secondary-text:       var(--color-brand);
-  --btn-secondary-border:     var(--color-brand);
+  --btn-secondary-text:       var(--color-brand-accent);
+  --btn-secondary-border:     var(--color-brand-accent);
 
   /* Tertiary */
   --btn-tertiary-bg:          transparent;
   --btn-tertiary-bg-hover:    var(--color-blue-100);
   --btn-tertiary-bg-pressed:  var(--color-blue-200);
-  --btn-tertiary-text:        var(--color-brand);
+  --btn-tertiary-text:        var(--color-brand-accent);
 
   /* Danger */
   --btn-danger-bg:            var(--color-accent-red-primary);
@@ -61,7 +61,7 @@
 .button--medium {
   height: 36px;
   padding: 0 var(--space-8);
-  border-radius: var(--radius-s);
+  border-radius: var(--radius-button);
   font-size: 14px;
   line-height: 22px;
   gap: var(--space-2);
@@ -70,7 +70,7 @@
 .button--small {
   height: 28px;
   padding: 0 var(--space-6);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-button);
   font-size: 13px;
   line-height: 20px;
   gap: var(--space-1);
@@ -203,25 +203,10 @@
   to { transform: rotate(360deg); }
 }
 
-/* --- Dark mode overrides --- */
+/* Dark mode: primary/secondary/tertiary colors cascade automatically
+   from [data-theme="dark"] overrides in tokens.css.
+   Only danger needs explicit overrides since it uses fixed hex values. */
 [data-theme='dark'] .button {
-  --btn-primary-bg:           var(--color-brand);
-  --btn-primary-bg-hover:     #7abef8;
-  --btn-primary-bg-pressed:   #8ecbf9;
-
-  --btn-secondary-bg:         transparent;
-  --btn-secondary-bg-hover:   var(--color-blue-100);
-  --btn-secondary-bg-pressed: var(--color-blue-200);
-  --btn-secondary-text:       var(--color-brand);
-  --btn-secondary-border:     var(--color-brand);
-
-  --btn-tertiary-bg:          transparent;
-  --btn-tertiary-bg-hover:    var(--color-blue-100);
-  --btn-tertiary-bg-pressed:  var(--color-blue-200);
-  --btn-tertiary-text:        var(--color-brand);
-
-  --btn-danger-bg:            var(--color-accent-red-primary);
-  --btn-danger-bg-hover:      #ff9385;
-  --btn-danger-bg-pressed:    #ffaaa0;
-  --btn-danger-text:          #ffffff;
+  --btn-danger-bg-hover:   #ff9385;
+  --btn-danger-bg-pressed: #ffaaa0;
 }

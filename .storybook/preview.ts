@@ -68,12 +68,29 @@ const preview: Preview = {
   },
   globalTypes: {
     theme: {
-      description: 'Global theme for components',
+      description: 'Color theme',
       defaultValue: 'light',
       toolbar: {
         title: 'Theme',
         icon: 'circlehollow',
-        items: ['light', 'dark'],
+        items: [
+          { value: 'light', title: 'Light' },
+          { value: 'dark', title: 'Dark' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    radius: {
+      description: 'Radius mode',
+      defaultValue: 'smooth',
+      toolbar: {
+        title: 'Radius',
+        icon: 'component',
+        items: [
+          { value: 'sharp',   title: 'Sharp (2px)' },
+          { value: 'smooth',  title: 'Smooth (default)' },
+          { value: 'rounded', title: 'Rounded (pill)' },
+        ],
         dynamicTitle: true,
       },
     },
@@ -81,7 +98,9 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme || 'light';
+      const radius = context.globals.radius || 'smooth';
       document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-radius', radius);
       return Story();
     },
   ],
