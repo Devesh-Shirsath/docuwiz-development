@@ -5,18 +5,16 @@ export type { IconWeight };
 
 export type PhosphorIconName = string;
 
-const EXCLUDED = new Set(['IconContext', 'IconBase', 'SSRBase', 'default']);
+const EXCLUDED = new Set(['IconContext', 'IconBase', 'SSRBase', 'SSR', 'default']);
 
 export const iconMap: Record<string, Icon> = Object.fromEntries(
-  Object.entries(PhosphorIcons).filter(
-    ([key, val]) =>
-      !EXCLUDED.has(key) &&
-      // forwardRef icons are objects, not functions — check both
-      val != null &&
-      (typeof val === 'function' || typeof val === 'object') &&
-      // skip the *Icon aliases (duplicate exports e.g. AcornIcon === Acorn)
-      !key.endsWith('Icon')
-  )
+  Object.entries(PhosphorIcons).filter(([key, val]) => {
+    if (EXCLUDED.has(key)) return false;
+    if (key.endsWith('Icon')) return false; // skip *Icon aliases
+    // Phosphor icons are forwardRef objects — require displayName ending in "Icon"
+    const v = val as { displayName?: string };
+    return typeof v?.displayName === 'string' && v.displayName.endsWith('Icon');
+  })
 ) as Record<string, Icon>;
 
 export const iconNames: PhosphorIconName[] = Object.keys(iconMap).sort();
