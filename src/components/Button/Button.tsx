@@ -8,19 +8,31 @@ export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger';
 export type ButtonSize = 'medium' | 'small';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /**
+   * **primary** — high-emphasis, one per section max.
+   * **secondary** — medium-emphasis, paired actions or fallbacks.
+   * **tertiary** — low-emphasis, inline or supporting actions.
+   * **danger** — irreversible/destructive actions only.
+   */
   variant?: ButtonVariant;
+  /**
+   * **medium** (36px) — default for most surfaces.
+   * **small** (28px) — dense toolbars, table rows, inline contexts.
+   */
   size?: ButtonSize;
+  /** Replaces content with a spinner and sets `aria-busy`. The button stays the same width. */
   loading?: boolean;
-  /** Render a Phosphor icon by name (left slot). Overrides iconLeft. */
+  /** Phosphor icon name for the left slot (e.g. `"Plus"`, `"Trash"`). Searchable in Controls. */
   iconLeftName?: string;
-  /** Render a Phosphor icon by name (right slot). Overrides iconRight. */
+  /** Phosphor icon name for the right slot. Use sparingly — trailing icons signal direction (→) or dropdown (▾). */
   iconRightName?: string;
-  /** Phosphor icon weight applied to both named icons */
+  /** Stroke weight for Phosphor icons. `regular` is the default; `bold` for smaller sizes. */
   iconWeight?: IconWeight;
-  /** Custom React node for left icon slot */
+  /** Custom React node for the left icon slot — use when you need a non-Phosphor icon. */
   iconLeft?: React.ReactNode;
-  /** Custom React node for right icon slot */
+  /** Custom React node for the right icon slot. */
   iconRight?: React.ReactNode;
+  /** Stretches button to fill its container. Avoid inside flex rows — use explicit widths instead. */
   fullWidth?: boolean;
   children?: React.ReactNode;
 }

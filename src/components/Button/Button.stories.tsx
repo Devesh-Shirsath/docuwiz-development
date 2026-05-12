@@ -14,8 +14,18 @@ const meta: Meta<typeof Button> = {
     layout: 'padded',
     docs: {
       description: {
-        component:
-          'Button supports 4 variants, 2 sizes, loading/disabled states, Phosphor icons (left, right, icon-only), full-width, and dark mode. Use `iconLeftName` / `iconRightName` with any of the 1,512 Phosphor icon names.',
+        component: `
+Buttons trigger actions. Pick the right variant based on **emphasis hierarchy** — how important the action is relative to others on the same surface.
+
+| Variant | Use when | Avoid |
+|---|---|---|
+| **Primary** | The single most important action on the page or section | More than one per section — it dilutes hierarchy |
+| **Secondary** | Supporting actions alongside a Primary (e.g. Cancel / Save) | As a standalone CTA with no Primary nearby |
+| **Tertiary** | Low-emphasis, inline, or supplementary actions | When the action needs visibility — it blends in |
+| **Danger** | Irreversible or destructive actions (delete, revoke) | Routine actions — overuse creates alert fatigue |
+
+**Icon guidance** — leading icons clarify intent; trailing icons signal direction (→) or expand (▾). Icon-only buttons require an \`aria-label\`.
+        `,
       },
     },
   },
@@ -93,8 +103,7 @@ export const Playground: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Use the **Controls** panel to try every combination. Pick any icon from the `iconLeftName` / `iconRightName` dropdowns (type to search).',
+        story: 'Live sandbox — use the **Controls** panel to try every combination. Type to search across 1,512 Phosphor icons in the icon dropdowns.',
       },
     },
   },
@@ -105,6 +114,11 @@ export const Playground: Story = {
    ============================================================ */
 export const AllVariantsMatrix: Story = {
   name: 'All Variants Matrix',
+  parameters: {
+    docs: {
+      description: { story: 'All four variants at both sizes. Use this as a visual reference when deciding which variant fits a new surface.' },
+    },
+  },
   render: () => {
     const variants = ['primary', 'secondary', 'tertiary', 'danger'] as const;
     const sizes = ['medium', 'small'] as const;
@@ -141,6 +155,11 @@ export const AllVariantsMatrix: Story = {
    STATES
    ============================================================ */
 export const States: Story = {
+  parameters: {
+    docs: {
+      description: { story: 'Default, disabled, and loading states across all variants and sizes. `loading` keeps the button width stable so the layout does not shift.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {(['primary', 'secondary', 'tertiary', 'danger'] as const).map((variant) => (
@@ -275,6 +294,11 @@ export const LongLabel: Story = {
 
 export const LoadingStates: Story = {
   name: 'Edge / Loading All Variants',
+  parameters: {
+    docs: {
+      description: { story: 'Use `loading` for async actions (API calls, form submissions). Combine with disabled-like styling to prevent double-submits — `aria-busy` is set automatically.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
       <Button variant="primary" size="medium" loading>Connecting</Button>

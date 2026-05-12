@@ -5,15 +5,22 @@ import type { IconWeight } from '@phosphor-icons/react';
 import styles from './Dropdown.module.css';
 
 export interface DropdownItemProps {
+  /** Primary item label — keep to one line. */
   label: string;
+  /** Optional second line of supporting text — use sparingly, only when context genuinely helps the decision. */
   description?: string;
+  /** Phosphor icon name for the leading slot — reinforces the label, not decorative. */
   leadingIconName?: string;
+  /** Phosphor icon name for the trailing slot — use for shortcuts, external-link indicators, or nested menu arrows. */
   trailingIconName?: string;
   iconWeight?: IconWeight;
+  /** Marks the item as the current selection. Shows a check in single-select; fills checkbox in multi-select. */
   selected?: boolean;
+  /** Greys out and blocks interaction. Show why it's unavailable via a tooltip if possible. */
   disabled?: boolean;
+  /** Renders the item in red. Reserve for irreversible actions (delete, revoke). */
   destructive?: boolean;
-  /** Show checkbox — use for multi-select menus */
+  /** Show checkbox — use for multi-select menus where multiple items can be active at once. */
   checkbox?: boolean;
   onClick?: (e: React.MouseEvent) => void;
   'data-focused'?: boolean;

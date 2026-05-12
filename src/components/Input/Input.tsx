@@ -4,32 +4,39 @@ import type { IconWeight } from '@phosphor-icons/react';
 import styles from './Input.module.css';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
-  /** Visible label above the field */
+  /** Label rendered above the field. Always provide one — use `aria-label` on the input only as a last resort. */
   label?: string;
-  /** Helper text below the field */
+  /** Neutral helper text shown below the field. Disappears when a `stateMessage` is active. */
   helperText?: string;
-  /** Validation state */
+  /**
+   * Validation state. Drives border color, icon tint, and ring color.
+   * - **default** — neutral, no validation signal.
+   * - **error** — validation failed; always pair with a `stateMessage` explaining what went wrong.
+   * - **success** — confirmed valid (e.g. username available).
+   * - **warning** — valid but worth attention (e.g. reserved keyword, near a limit).
+   */
   inputState?: 'default' | 'error' | 'success' | 'warning';
-  /** Message shown for error / success / warning */
+  /** Replaces `helperText` when shown. Write in plain language: what went wrong and how to fix it. */
   stateMessage?: string;
-  /** Phosphor icon name on the left */
+  /** Phosphor icon name in the left slot. Use to reinforce field type (envelope for email, lock for password). */
   leadingIconName?: string;
-  /** Phosphor icon name on the right */
+  /** Phosphor icon name in the right slot. Use for status indicators or clear buttons. Avoid decorative use. */
   trailingIconName?: string;
+  /** Stroke weight for Phosphor icons. */
   iconWeight?: IconWeight;
-  /** Text prefix inside the field (e.g. "https://") */
+  /** Static text shown inside the field before the input (e.g. `"https://"`, `"$"`). Not editable. */
   prefix?: string;
-  /** Text suffix inside the field (e.g. ".com") */
+  /** Static text shown inside the field after the input (e.g. `".com"`, `"%"`). Not editable. */
   suffix?: string;
-  /** Input size */
+  /** **medium** (36px) default. **small** (28px) for dense forms, table filters, or inline edits. */
   size?: 'medium' | 'small';
-  /** Stretch to fill parent */
+  /** Stretches the field to fill its container. Use inside grid/flex form layouts. */
   fullWidth?: boolean;
-  /** Show required asterisk on label */
+  /** Appends a red `*` to the label and sets `aria-required`. */
   required?: boolean;
-  /** Optional label for the optional indicator */
+  /** Appends `(optional)` to the label — use when most fields are required and this one is the exception. */
   optionalLabel?: boolean;
-  /** Custom trailing action element (e.g. copy/clear button) */
+  /** Custom React node in the trailing slot — e.g. an icon button to copy or clear the value. */
   trailingAction?: React.ReactNode;
 }
 

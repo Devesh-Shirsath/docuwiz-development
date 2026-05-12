@@ -8,14 +8,31 @@ import type { IconWeight } from '@phosphor-icons/react';
 const meta: Meta<typeof Input> = {
   title: 'Components/Input',
   component: Input,
+  tags: ['autodocs'],
   parameters: {
     layout: 'padded',
     docs: {
       description: {
-        component:
-          'Text input field with full state coverage: default, hover, focus, disabled, ' +
-          'read-only, error, success, warning. Supports leading/trailing icons, ' +
-          'prefix/suffix text, labels, helper text, and required/optional markers.',
+        component: `
+Single-line text input with full state and slot coverage.
+
+**States at a glance**
+
+| State | When to use |
+|---|---|
+| **default** | Field is empty and ready |
+| **hover** | Handled by CSS — no prop needed |
+| **focus** | Handled by CSS — brand ring appears automatically |
+| **disabled** | User cannot interact — add a tooltip or explanatory text nearby |
+| **readOnly** | Value is visible and copyable but not editable (e.g. API key display) |
+| **error** | Validation failed — always pair with a \`stateMessage\` |
+| **success** | Field is confirmed valid (e.g. username availability check) |
+| **warning** | Valid but needs attention — use sparingly or it becomes noise |
+
+**Label rules** — always provide a \`label\`. Screen readers and password managers rely on it. Use \`aria-label\` only when a visible label is truly impossible (e.g. a search bar with a magnifying-glass icon and obvious context).
+
+**Helper vs state message** — helper text is permanent guidance. State message replaces it when validation fires. Keep both under one line.
+        `,
       },
     },
   },
@@ -54,6 +71,11 @@ export const Playground: Story = {
 
 export const AllStates: Story = {
   name: 'All States',
+  parameters: {
+    docs: {
+      description: { story: 'Every state in one view. Click into a field to see the focus ring. Note how `disabled` uses reduced opacity while `readOnly` keeps full opacity but signals non-editability through cursor and background.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 400 }}>
       <Input
@@ -146,6 +168,11 @@ export const WithIcons: Story = {
 
 export const PrefixSuffix: Story = {
   name: 'Prefix & Suffix Text',
+  parameters: {
+    docs: {
+      description: { story: 'Use `prefix`/`suffix` for fixed context that is part of the format (units, protocol, domain). Do not use both a prefix and a suffix with a leading icon at the same time — the field becomes too busy.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 360 }}>
       <Input label="Website" placeholder="yoursite" prefix="https://" suffix=".com" />
@@ -158,6 +185,11 @@ export const PrefixSuffix: Story = {
 
 export const LabelVariants: Story = {
   name: 'Label Variants — Required / Optional',
+  parameters: {
+    docs: {
+      description: { story: 'Choose one convention per form — either mark required fields with `*` or mark optional ones with `(optional)`. Mixing both creates confusion. The `(optional)` pattern works best when most fields are required and only one or two are not.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 360 }}>
       <Input label="Username" placeholder="Pick a username" required helperText="3–20 characters" />
@@ -169,6 +201,11 @@ export const LabelVariants: Story = {
 
 export const ValidationStates: Story = {
   name: 'Validation States',
+  parameters: {
+    docs: {
+      description: { story: '**Error** is the most common validation state — always explain what is wrong and how to fix it. **Success** is optional; only show it when confirmation genuinely reduces anxiety (e.g. checking username availability). **Warning** is for edge cases — valid but risky.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 360 }}>
       <Input
@@ -204,6 +241,11 @@ export const ValidationStates: Story = {
 
 export const Controlled: Story = {
   name: 'Controlled — Live Character Count',
+  parameters: {
+    docs: {
+      description: { story: 'Controlled pattern with live feedback. State transitions: default → warning at 85% of limit → error when over. The `stateMessage` and `helperText` swap automatically — only one shows at a time.' },
+    },
+  },
   render: () => {
     const [val, setVal] = useState('');
     const max = 60;

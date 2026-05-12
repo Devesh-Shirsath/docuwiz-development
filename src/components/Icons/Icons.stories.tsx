@@ -96,12 +96,27 @@ const WeightShowcase = ({ iconName, size }: { iconName: string; size: number }) 
    ============================================================ */
 const meta: Meta = {
   title: 'Components/Icons',
+  tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
-        component:
-          '**Phosphor Icons** — 1,512 icons × 6 weights. Click any icon tile to copy its name to clipboard. Use the name in Button\'s `iconLeftName` / `iconRightName` props.',
+        component: `
+**Phosphor Icons** — 1,512 icons across 6 weights. All icons are available in any component that accepts \`iconLeftName\` / \`iconRightName\`.
+
+**Picking a weight**
+
+| Weight | When to use |
+|---|---|
+| **regular** | Default for most UI contexts |
+| **bold** | Small sizes (≤14px), dense toolbars |
+| **light** | Large decorative icons, empty states |
+| **fill** | Active/selected states, toggle indicators |
+| **duotone** | Illustrations, feature spotlights |
+| **thin** | Rare — very large display icons only |
+
+Click any icon tile to copy its name to clipboard, then paste it into any icon prop.
+        `,
       },
     },
   },

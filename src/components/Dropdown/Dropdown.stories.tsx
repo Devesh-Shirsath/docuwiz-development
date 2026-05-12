@@ -9,14 +9,24 @@ import type { IconWeight } from '@phosphor-icons/react';
 const meta: Meta<typeof Dropdown> = {
   title: 'Components/Dropdown',
   component: Dropdown,
+  tags: ['autodocs'],
   parameters: {
     layout: 'padded',
     docs: {
       description: {
-        component:
-          'Dropdown trigger button (primary / secondary / ghost) with a popup overlay. ' +
-          'Supports single-select, multi-select, icons, descriptions, destructive items, ' +
-          'keyboard navigation (Arrow keys, Escape), and click-outside to close.',
+        component: `
+A trigger button that reveals a contextual popup menu of \`DropdownItem\` options.
+
+| Use when | Avoid |
+|---|---|
+| You have 3+ related actions to surface without cluttering the layout | You have 1–2 actions — show them as plain Buttons instead |
+| The action set is contextual (changes per row, per selection) | The list never changes — a static nav link is clearer |
+| Space is constrained and actions are secondary | The primary call-to-action — keep that as a visible Button |
+
+**Single-select vs multi-select** — for single-select, clicking an item should close the popup and update the trigger label. For multi-select, use \`checkbox\` on each item and keep the popup open until the user dismisses it.
+
+**Keyboard** — Arrow keys navigate items, Enter/Space activates, Escape closes and returns focus to the trigger.
+        `,
       },
     },
   },
@@ -72,6 +82,11 @@ export const Playground: Story = {
 
 export const Variants: Story = {
   name: 'Variants — Primary / Secondary / Ghost',
+  parameters: {
+    docs: {
+      description: { story: '**Primary** when the dropdown is the headline action. **Secondary** alongside other controls (most common). **Ghost** in toolbars, table rows, or card headers where a border would be too loud.' },
+    },
+  },
   render: () => (
     <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingBottom: 200 }}>
       {(['primary', 'secondary', 'ghost'] as const).map((v) => (
@@ -117,6 +132,11 @@ export const WithLeadingIcon: Story = {
 
 export const WithDescriptions: Story = {
   name: 'Items With Descriptions',
+  parameters: {
+    docs: {
+      description: { story: 'Add `description` only when the label alone is genuinely ambiguous. Avoid restating the label in different words — that adds noise without value. Set `popupWidth="auto"` so descriptions are not truncated.' },
+    },
+  },
   render: () => (
     <div style={{ paddingBottom: 280 }}>
       <Dropdown label="Create new" iconLeftName="Plus" variant="primary" popupWidth="auto">
@@ -161,6 +181,11 @@ export const WithTrailingIcons: Story = {
 
 export const SingleSelect: Story = {
   name: 'Single Select',
+  parameters: {
+    docs: {
+      description: { story: 'Clicking an item updates the trigger label and closes the popup. The selected item shows a checkmark. Update the trigger label to reflect the current value so the user always knows what is selected without opening the menu.' },
+    },
+  },
   render: () => {
     const [selected, setSelected] = useState('monthly');
     const options = [
@@ -194,6 +219,11 @@ export const SingleSelect: Story = {
 
 export const MultiSelect: Story = {
   name: 'Multi Select (Checkboxes)',
+  parameters: {
+    docs: {
+      description: { story: 'Use `checkbox` on each `DropdownItem` when multiple selections are valid at once. The popup stays open — let the user close it with Escape or a click outside. Reflect the count or a summary in the trigger label.' },
+    },
+  },
   render: () => {
     const options = [
       { value: 'read',    label: 'Read',    icon: 'Eye'          },

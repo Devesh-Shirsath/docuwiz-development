@@ -5,26 +5,41 @@ import type { IconWeight } from '@phosphor-icons/react';
 import styles from './Dropdown.module.css';
 
 export interface DropdownProps {
-  /** Button label */
+  /** The trigger button label. Keep it short — 1–3 words. */
   label: string;
+  /**
+   * **primary** — use when the dropdown is the main action on the surface.
+   * **secondary** — default; paired alongside other controls.
+   * **ghost** — low-emphasis, inside toolbars or overflow menus.
+   */
   variant?: 'primary' | 'secondary' | 'ghost';
+  /** **medium** (36px) default. **small** (28px) for dense toolbars or table rows. */
   size?: 'medium' | 'small';
-  /** Phosphor icon name for button leading icon */
+  /** Phosphor icon name shown in the trigger button's left slot. */
   iconLeftName?: string;
+  /** Stroke weight for the trigger icon. */
   iconWeight?: IconWeight;
+  /** Disables the trigger and prevents the popup from opening. */
   disabled?: boolean;
-  /** Full width trigger */
+  /** Stretches trigger to fill its container — useful for form fields or sidebars. */
   fullWidth?: boolean;
-  /** Controlled open state */
+  /** Controlled open state. Omit to use internal uncontrolled state. */
   open?: boolean;
+  /** Called when the popup opens or closes. */
   onOpenChange?: (open: boolean) => void;
-  /** Popup children — DropdownItem nodes */
+  /** `DropdownItem` nodes (and optional `<hr>` dividers). */
   children?: React.ReactNode;
-  /** Popup width: 'trigger' matches trigger width, 'auto' fits content */
+  /**
+   * **trigger** — popup is at least as wide as the trigger (good for selects).
+   * **auto** — popup shrinks to fit content (good for action menus).
+   */
   popupWidth?: 'trigger' | 'auto';
-  /** Popup horizontal alignment */
+  /**
+   * **start** — popup aligns to the trigger's left edge (default).
+   * **end** — popup aligns to the right edge; use for overflow menus near the viewport edge.
+   */
   align?: 'start' | 'end';
-  /** Section label above children */
+  /** Small uppercase label rendered above the first item — use for grouped menus. */
   sectionLabel?: string;
 }
 
