@@ -1,36 +1,7 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from './Button';
-
-/* --- Sample icons (inline SVG, no icon lib dependency) --- */
-const IconPlug = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M6 2v3M10 2v3M4 5h8a1 1 0 0 1 1 1v2a5 5 0 0 1-10 0V6a1 1 0 0 1 1-1zM8 13v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconArrow = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const IconPlus = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-);
-
-const IconTrash = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M3 4h10M6 4V3h4v1M5 4l1 9h4l1-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const SmallIconPlug = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M6 2v3M10 2v3M4 5h8a1 1 0 0 1 1 1v2a5 5 0 0 1-10 0V6a1 1 0 0 1 1-1zM8 13v1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+import { iconNames, ICON_WEIGHTS } from '@/utils/iconMap';
 
 /* ============================================================
    META
@@ -44,7 +15,7 @@ const meta: Meta<typeof Button> = {
     docs: {
       description: {
         component:
-          'The Button component supports 4 variants (primary, secondary, tertiary, danger), 2 sizes (medium, small), and multiple states including loading, disabled, icon-left, icon-right, icon-only, and full-width.',
+          'Button supports 4 variants, 2 sizes, loading/disabled states, Phosphor icons (left, right, icon-only), full-width, and dark mode. Use `iconLeftName` / `iconRightName` with any of the 1,512 Phosphor icon names.',
       },
     },
   },
@@ -52,16 +23,36 @@ const meta: Meta<typeof Button> = {
     variant: {
       control: 'select',
       options: ['primary', 'secondary', 'tertiary', 'danger'],
-      description: 'Visual style of the button',
+      description: 'Visual style',
+      table: { defaultValue: { summary: 'primary' } },
     },
     size: {
       control: 'select',
       options: ['medium', 'small'],
-      description: 'Height and padding scale',
+      description: 'Height & padding scale',
+      table: { defaultValue: { summary: 'medium' } },
+    },
+    iconLeftName: {
+      control: 'select',
+      options: ['none', ...iconNames],
+      description: '🔍 Search & pick a Phosphor icon for the left slot',
+      table: { category: 'Icons' },
+    },
+    iconRightName: {
+      control: 'select',
+      options: ['none', ...iconNames],
+      description: '🔍 Search & pick a Phosphor icon for the right slot',
+      table: { category: 'Icons' },
+    },
+    iconWeight: {
+      control: 'select',
+      options: ICON_WEIGHTS,
+      description: 'Phosphor icon weight',
+      table: { category: 'Icons', defaultValue: { summary: 'regular' } },
     },
     loading: {
       control: 'boolean',
-      description: 'Shows a spinner and disables interaction',
+      description: 'Shows spinner, disables interaction',
     },
     disabled: {
       control: 'boolean',
@@ -69,16 +60,23 @@ const meta: Meta<typeof Button> = {
     },
     fullWidth: {
       control: 'boolean',
-      description: 'Stretches button to fill its container',
+      description: 'Stretches to fill container',
     },
     children: {
       control: 'text',
+      description: 'Button label. Leave empty for icon-only.',
     },
+    /* hide internal props from controls */
+    iconLeft: { table: { disable: true } },
+    iconRight: { table: { disable: true } },
   },
   args: {
     children: 'Primary Button',
     variant: 'primary',
     size: 'medium',
+    iconLeftName: 'Plugs',
+    iconRightName: 'none',
+    iconWeight: 'regular',
     loading: false,
     disabled: false,
     fullWidth: false,
@@ -89,159 +87,45 @@ export default meta;
 type Story = StoryObj<typeof Button>;
 
 /* ============================================================
-   INTERACTIVE PLAYGROUND
+   PLAYGROUND — fully interactive controls
    ============================================================ */
 export const Playground: Story = {
-  args: {
-    children: 'Primary Button',
-    iconLeft: <IconPlug />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the **Controls** panel to try every combination. Pick any icon from the `iconLeftName` / `iconRightName` dropdowns (type to search).',
+      },
+    },
   },
 };
 
 /* ============================================================
-   VARIANTS — MEDIUM
+   VARIANTS × SIZES (matches Figma matrix)
    ============================================================ */
-export const PrimaryMedium: Story = {
-  name: 'Primary / Medium',
-  args: { variant: 'primary', size: 'medium', children: 'Primary Button', iconLeft: <IconPlug /> },
-};
-
-export const SecondaryMedium: Story = {
-  name: 'Secondary / Medium',
-  args: { variant: 'secondary', size: 'medium', children: 'Primary Button', iconLeft: <IconPlug /> },
-};
-
-export const TertiaryMedium: Story = {
-  name: 'Tertiary / Medium',
-  args: { variant: 'tertiary', size: 'medium', children: 'Primary Button', iconLeft: <IconPlug /> },
-};
-
-export const DangerMedium: Story = {
-  name: 'Danger / Medium',
-  args: { variant: 'danger', size: 'medium', children: 'Delete', iconLeft: <IconTrash /> },
-};
-
-/* ============================================================
-   VARIANTS — SMALL
-   ============================================================ */
-export const PrimarySmall: Story = {
-  name: 'Primary / Small',
-  args: { variant: 'primary', size: 'small', children: 'Primary Button', iconLeft: <SmallIconPlug /> },
-};
-
-export const SecondarySmall: Story = {
-  name: 'Secondary / Small',
-  args: { variant: 'secondary', size: 'small', children: 'Primary Button', iconLeft: <SmallIconPlug /> },
-};
-
-export const TertiarySmall: Story = {
-  name: 'Tertiary / Small',
-  args: { variant: 'tertiary', size: 'small', children: 'Primary Button', iconLeft: <SmallIconPlug /> },
-};
-
-export const DangerSmall: Story = {
-  name: 'Danger / Small',
-  args: { variant: 'danger', size: 'small', children: 'Delete', iconLeft: <SmallIconPlug /> },
-};
-
-/* ============================================================
-   STATES
-   ============================================================ */
-export const Disabled: Story = {
-  render: () => (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-      <Button variant="primary" disabled iconLeft={<IconPlug />}>Primary</Button>
-      <Button variant="secondary" disabled iconLeft={<IconPlug />}>Secondary</Button>
-      <Button variant="tertiary" disabled iconLeft={<IconPlug />}>Tertiary</Button>
-      <Button variant="danger" disabled iconLeft={<IconTrash />}>Danger</Button>
-    </div>
-  ),
-  parameters: { docs: { description: { story: 'All variants in disabled state (opacity 0.4).' } } },
-};
-
-export const Loading: Story = {
-  render: () => (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-      <Button variant="primary" loading>Connecting</Button>
-      <Button variant="secondary" loading>Loading</Button>
-      <Button variant="tertiary" loading>Loading</Button>
-      <Button variant="danger" loading>Deleting</Button>
-    </div>
-  ),
-  parameters: { docs: { description: { story: 'Loading state shows a spinning indicator and disables interaction.' } } },
-};
-
-/* ============================================================
-   ICON POSITIONS
-   ============================================================ */
-export const IconLeft: Story = {
-  name: 'Icon / Left',
-  render: () => (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-      <Button variant="primary" size="medium" iconLeft={<IconPlug />}>Connect</Button>
-      <Button variant="secondary" size="medium" iconLeft={<IconPlus />}>Add endpoint</Button>
-      <Button variant="tertiary" size="medium" iconLeft={<IconArrow />}>Learn more</Button>
-    </div>
-  ),
-};
-
-export const IconRight: Story = {
-  name: 'Icon / Right',
-  render: () => (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-      <Button variant="primary" size="medium" iconRight={<IconArrow />}>Continue</Button>
-      <Button variant="secondary" size="medium" iconRight={<IconArrow />}>Next step</Button>
-      <Button variant="tertiary" size="medium" iconRight={<IconArrow />}>See all</Button>
-    </div>
-  ),
-};
-
-export const IconOnly: Story = {
-  name: 'Icon / Only',
-  render: () => (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-      <Button variant="primary" size="medium" iconLeft={<IconPlus />} aria-label="Add" />
-      <Button variant="secondary" size="medium" iconLeft={<IconPlus />} aria-label="Add" />
-      <Button variant="tertiary" size="medium" iconLeft={<IconPlus />} aria-label="Add" />
-      <Button variant="danger" size="medium" iconLeft={<IconTrash />} aria-label="Delete" />
-      <Button variant="primary" size="small" iconLeft={<SmallIconPlug />} aria-label="Connect" />
-      <Button variant="secondary" size="small" iconLeft={<SmallIconPlug />} aria-label="Connect" />
-    </div>
-  ),
-  parameters: { docs: { description: { story: 'Icon-only buttons are square. Always provide `aria-label` for accessibility.' } } },
-};
-
-/* ============================================================
-   FULL WIDTH
-   ============================================================ */
-export const FullWidth: Story = {
-  name: 'Full Width',
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 400 }}>
-      <Button variant="primary" fullWidth iconLeft={<IconPlug />}>Connect API</Button>
-      <Button variant="secondary" fullWidth>Cancel</Button>
-    </div>
-  ),
-  parameters: { docs: { description: { story: 'Stretches to fill the parent container. Common in mobile layouts and modals.' } } },
-};
-
-/* ============================================================
-   ALL VARIANTS MATRIX (matches Figma spec)
-   ============================================================ */
-export const AllVariants: Story = {
+export const AllVariantsMatrix: Story = {
   name: 'All Variants Matrix',
   render: () => {
     const variants = ['primary', 'secondary', 'tertiary', 'danger'] as const;
     const sizes = ['medium', 'small'] as const;
+    const icons = ['Plugs', 'Plugs'] as const;
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {sizes.map((size) => (
+        {sizes.map((size, si) => (
           <div key={size}>
-            <p style={{ font: 'var(--typography-body-xs-medium)', color: 'var(--color-font-tertiary)', marginBottom: 12, textTransform: 'capitalize' }}>{size}</p>
+            <p style={{ font: 'var(--typography-body-xs-medium)', color: 'var(--color-font-tertiary)', marginBottom: 12, textTransform: 'capitalize' }}>
+              {size}
+            </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               {variants.map((variant) => (
-                <Button key={variant} variant={variant} size={size} iconLeft={variant === 'danger' ? <IconTrash /> : <IconPlug />}>
+                <Button
+                  key={variant}
+                  variant={variant}
+                  size={size}
+                  iconLeftName={icons[si]}
+                  iconWeight="regular"
+                >
                   {variant.charAt(0).toUpperCase() + variant.slice(1)}
                 </Button>
               ))}
@@ -254,63 +138,164 @@ export const AllVariants: Story = {
 };
 
 /* ============================================================
-   EDGE CASES
+   STATES
    ============================================================ */
-export const LongLabel: Story = {
-  name: 'Edge / Long Label',
+export const States: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 300 }}>
-      <Button variant="primary" iconLeft={<IconPlug />}>
-        Connect to a very long named API endpoint
-      </Button>
-      <Button variant="secondary" iconLeft={<IconPlug />}>
-        Connect to a very long named API endpoint
-      </Button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {(['primary', 'secondary', 'tertiary', 'danger'] as const).map((variant) => (
+        <div key={variant} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ font: 'var(--typography-body-xs-medium)', color: 'var(--color-font-tertiary)', width: 72, textTransform: 'capitalize', flexShrink: 0 }}>
+            {variant}
+          </span>
+          <Button variant={variant} size="medium" iconLeftName="Plugs" iconWeight="regular">Default</Button>
+          <Button variant={variant} size="medium" iconLeftName="Plugs" iconWeight="regular" disabled>Disabled</Button>
+          <Button variant={variant} size="medium" loading>Loading</Button>
+          <Button variant={variant} size="small" iconLeftName="Plugs" iconWeight="regular">Small</Button>
+          <Button variant={variant} size="small" iconLeftName="Plugs" iconWeight="regular" disabled>Disabled</Button>
+          <Button variant={variant} size="small" loading>Loading</Button>
+        </div>
+      ))}
     </div>
   ),
-  parameters: { docs: { description: { story: 'Long labels wrap inside the button. Use `fullWidth` + fixed container to prevent overflow.' } } },
 };
 
-export const NoLabel: Story = {
-  name: 'Edge / No Label (icon only)',
+/* ============================================================
+   ICON WEIGHTS IN BUTTON
+   ============================================================ */
+export const IconWeights: Story = {
+  name: 'Icon Weights',
   render: () => (
-    <div style={{ display: 'flex', gap: 12 }}>
-      <Button variant="primary" iconLeft={<IconPlus />} aria-label="Add item" />
-      <Button variant="secondary" iconLeft={<IconPlus />} aria-label="Add item" />
-      <Button variant="primary" size="small" iconLeft={<SmallIconPlug />} aria-label="Connect" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {ICON_WEIGHTS.map((weight) => (
+        <div key={weight} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ font: 'var(--typography-body-xs-medium)', color: 'var(--color-font-tertiary)', width: 72, flexShrink: 0 }}>
+            {weight}
+          </span>
+          <Button variant="primary" iconLeftName="Plugs" iconWeight={weight}>Connect</Button>
+          <Button variant="secondary" iconLeftName="ArrowRight" iconWeight={weight} iconRightName="none">Navigate</Button>
+          <Button variant="tertiary" iconLeftName="MagnifyingGlass" iconWeight={weight}>Search</Button>
+        </div>
+      ))}
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: { story: 'All 6 Phosphor icon weights applied to the same button.' },
+    },
+  },
+};
+
+/* ============================================================
+   ICON POSITIONS
+   ============================================================ */
+export const IconLeft: Story = {
+  name: 'Icon / Left',
+  render: () => (
+    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <Button variant="primary" size="medium" iconLeftName="Plugs">Connect</Button>
+      <Button variant="secondary" size="medium" iconLeftName="Plus">Add endpoint</Button>
+      <Button variant="tertiary" size="medium" iconLeftName="ArrowRight">Learn more</Button>
+      <Button variant="primary" size="small" iconLeftName="Plugs">Connect</Button>
+      <Button variant="secondary" size="small" iconLeftName="Plus">Add</Button>
+    </div>
+  ),
+};
+
+export const IconRight: Story = {
+  name: 'Icon / Right',
+  render: () => (
+    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <Button variant="primary" size="medium" iconRightName="ArrowRight">Continue</Button>
+      <Button variant="secondary" size="medium" iconRightName="ArrowRight">Next step</Button>
+      <Button variant="tertiary" size="medium" iconRightName="ArrowUpRight">Open docs</Button>
+      <Button variant="primary" size="small" iconRightName="ArrowRight">Go</Button>
     </div>
   ),
 };
 
 export const BothIcons: Story = {
-  name: 'Edge / Both Icons',
+  name: 'Icon / Both',
   render: () => (
-    <div style={{ display: 'flex', gap: 12 }}>
-      <Button variant="primary" iconLeft={<IconPlug />} iconRight={<IconArrow />}>Connect & go</Button>
-      <Button variant="secondary" size="small" iconLeft={<SmallIconPlug />} iconRight={<IconArrow />}>Connect</Button>
+    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <Button variant="primary" size="medium" iconLeftName="Plugs" iconRightName="ArrowRight">Connect & go</Button>
+      <Button variant="secondary" size="medium" iconLeftName="MagnifyingGlass" iconRightName="X">Search</Button>
+      <Button variant="primary" size="small" iconLeftName="Plugs" iconRightName="ArrowRight">Connect</Button>
+    </div>
+  ),
+};
+
+export const IconOnly: Story = {
+  name: 'Icon / Only (square)',
+  render: () => (
+    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Button variant="primary" size="medium" iconLeftName="Plus" aria-label="Add" />
+      <Button variant="secondary" size="medium" iconLeftName="Plus" aria-label="Add" />
+      <Button variant="tertiary" size="medium" iconLeftName="Plus" aria-label="Add" />
+      <Button variant="danger" size="medium" iconLeftName="Trash" aria-label="Delete" />
+      <Button variant="primary" size="small" iconLeftName="Plus" aria-label="Add" />
+      <Button variant="secondary" size="small" iconLeftName="MagnifyingGlass" aria-label="Search" />
+      <Button variant="tertiary" size="small" iconLeftName="DotsThree" aria-label="More" />
+      <Button variant="danger" size="small" iconLeftName="Trash" aria-label="Delete" />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: { story: 'Icon-only buttons are square. Always pass `aria-label` for accessibility.' },
+    },
+  },
+};
+
+/* ============================================================
+   FULL WIDTH
+   ============================================================ */
+export const FullWidth: Story = {
+  name: 'Full Width',
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 400 }}>
+      <Button variant="primary" fullWidth iconLeftName="Plugs">Connect API</Button>
+      <Button variant="secondary" fullWidth>Cancel</Button>
+      <Button variant="danger" fullWidth iconLeftName="Trash">Delete workspace</Button>
+    </div>
+  ),
+};
+
+/* ============================================================
+   EDGE CASES
+   ============================================================ */
+export const LongLabel: Story = {
+  name: 'Edge / Long Label',
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 280 }}>
+      <Button variant="primary" iconLeftName="Plugs">Connect to a very long named API endpoint</Button>
+      <Button variant="secondary" iconLeftName="Plugs">Connect to a very long named API endpoint</Button>
+    </div>
+  ),
+};
+
+export const LoadingStates: Story = {
+  name: 'Edge / Loading All Variants',
+  render: () => (
+    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Button variant="primary" size="medium" loading>Connecting</Button>
+      <Button variant="secondary" size="medium" loading>Loading</Button>
+      <Button variant="tertiary" size="medium" loading>Loading</Button>
+      <Button variant="danger" size="medium" loading>Deleting</Button>
+      <Button variant="primary" size="small" loading>Connecting</Button>
+      <Button variant="secondary" size="small" loading>Loading</Button>
     </div>
   ),
 };
 
 export const AsSubmit: Story = {
-  name: 'Edge / Submit Type',
+  name: 'Edge / Submit Form',
   render: () => (
-    <form onSubmit={(e) => { e.preventDefault(); alert('submitted'); }}>
-      <Button type="submit" variant="primary">Submit Form</Button>
+    <form onSubmit={(e) => { e.preventDefault(); alert('Submitted!'); }}>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <Button type="submit" variant="primary" iconLeftName="Check">Submit</Button>
+        <Button type="reset" variant="tertiary">Reset</Button>
+      </div>
     </form>
-  ),
-  parameters: { docs: { description: { story: 'Use `type="submit"` inside forms. The button forwards all native button attributes.' } } },
-};
-
-export const LoadingAllSizes: Story = {
-  name: 'Edge / Loading All Sizes',
-  render: () => (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-      <Button variant="primary" size="medium" loading>Connecting</Button>
-      <Button variant="primary" size="small" loading>Connecting</Button>
-      <Button variant="secondary" size="medium" loading>Loading</Button>
-      <Button variant="secondary" size="small" loading>Loading</Button>
-    </div>
   ),
 };
 
@@ -332,25 +317,20 @@ export const DarkMode: Story = {
       }}
     >
       {(['primary', 'secondary', 'tertiary', 'danger'] as const).map((variant) => (
-        <div key={variant} style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Button variant={variant} size="medium" iconLeft={<IconPlug />}>
-            {variant.charAt(0).toUpperCase() + variant.slice(1)}
-          </Button>
-          <Button variant={variant} size="medium" iconLeft={<IconPlug />} disabled>
-            Disabled
-          </Button>
-          <Button variant={variant} size="medium" loading>
-            Loading
-          </Button>
-          <Button variant={variant} size="small" iconLeft={<SmallIconPlug />}>
-            Small
-          </Button>
+        <div key={variant} style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ font: 'var(--typography-body-xs-medium)', color: 'var(--color-font-tertiary)', width: 72, textTransform: 'capitalize', flexShrink: 0 }}>
+            {variant}
+          </span>
+          <Button variant={variant} size="medium" iconLeftName="Plugs" iconWeight="regular">Default</Button>
+          <Button variant={variant} size="medium" disabled iconLeftName="Plugs">Disabled</Button>
+          <Button variant={variant} size="medium" loading>Loading</Button>
+          <Button variant={variant} size="small" iconLeftName="Plugs">Small</Button>
+          <Button variant={variant} size="medium" iconLeftName="Plugs" aria-label="Icon only" />
         </div>
       ))}
     </div>
   ),
   parameters: {
     backgrounds: { default: 'dark' },
-    docs: { description: { story: 'All variants in dark mode. Uses `[data-theme="dark"]` on the container.' } },
   },
 };
