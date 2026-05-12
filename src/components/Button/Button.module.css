@@ -1,0 +1,227 @@
+/* =============================================================================
+   BUTTON
+   ============================================================================= */
+
+/* --- Local tokens --- */
+.button {
+  /* Primary */
+  --btn-primary-bg:           var(--color-brand);
+  --btn-primary-bg-hover:     #0255c0;
+  --btn-primary-bg-pressed:   #024fb5;
+  --btn-primary-text:         #ffffff;
+
+  /* Secondary */
+  --btn-secondary-bg:         transparent;
+  --btn-secondary-bg-hover:   var(--color-blue-100);
+  --btn-secondary-bg-pressed: var(--color-blue-200);
+  --btn-secondary-text:       var(--color-brand);
+  --btn-secondary-border:     var(--color-brand);
+
+  /* Tertiary */
+  --btn-tertiary-bg:          transparent;
+  --btn-tertiary-bg-hover:    var(--color-blue-100);
+  --btn-tertiary-bg-pressed:  var(--color-blue-200);
+  --btn-tertiary-text:        var(--color-brand);
+
+  /* Danger */
+  --btn-danger-bg:            var(--color-accent-red-primary);
+  --btn-danger-bg-hover:      #b81410;
+  --btn-danger-bg-pressed:    #9e120e;
+  --btn-danger-text:          #ffffff;
+}
+
+/* --- Base --- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  outline: none;
+  text-decoration: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+.button:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-blue-200);
+}
+
+/* --- Sizes --- */
+.button--medium {
+  height: 36px;
+  padding: 0 var(--space-8);
+  border-radius: var(--radius-s);
+  font-size: 14px;
+  line-height: 22px;
+  gap: var(--space-2);
+}
+
+.button--small {
+  height: 28px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  line-height: 20px;
+  gap: var(--space-1);
+}
+
+/* --- Icon only (square) --- */
+.button--icon-only.button--medium {
+  width: 36px;
+  padding: 0;
+}
+
+.button--icon-only.button--small {
+  width: 28px;
+  padding: 0;
+}
+
+/* --- Full width --- */
+.button--full-width {
+  width: 100%;
+}
+
+/* --- Primary --- */
+.button--primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: transparent;
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--btn-primary-bg-hover);
+}
+
+.button--primary:active:not(:disabled),
+.button--primary[aria-pressed='true']:not(:disabled) {
+  background: var(--btn-primary-bg-pressed);
+}
+
+/* --- Secondary --- */
+.button--secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--btn-secondary-bg-hover);
+}
+
+.button--secondary:active:not(:disabled),
+.button--secondary[aria-pressed='true']:not(:disabled) {
+  background: var(--btn-secondary-bg-pressed);
+}
+
+/* --- Tertiary --- */
+.button--tertiary {
+  background: var(--btn-tertiary-bg);
+  color: var(--btn-tertiary-text);
+  border-color: transparent;
+}
+
+.button--tertiary:hover:not(:disabled) {
+  background: var(--btn-tertiary-bg-hover);
+}
+
+.button--tertiary:active:not(:disabled),
+.button--tertiary[aria-pressed='true']:not(:disabled) {
+  background: var(--btn-tertiary-bg-pressed);
+}
+
+/* --- Danger --- */
+.button--danger {
+  background: var(--btn-danger-bg);
+  color: var(--btn-danger-text);
+  border-color: transparent;
+}
+
+.button--danger:hover:not(:disabled) {
+  background: var(--btn-danger-bg-hover);
+}
+
+.button--danger:active:not(:disabled),
+.button--danger[aria-pressed='true']:not(:disabled) {
+  background: var(--btn-danger-bg-pressed);
+}
+
+/* --- Disabled (all variants) --- */
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- Loading --- */
+.button--loading {
+  cursor: wait;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* --- Slots --- */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.label {
+  display: inline-block;
+}
+
+/* --- Spinner --- */
+.spinner {
+  flex-shrink: 0;
+  animation: spin 700ms linear infinite;
+}
+
+.spinner--medium {
+  width: 16px;
+  height: 16px;
+}
+
+.spinner--small {
+  width: 14px;
+  height: 14px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Dark mode overrides --- */
+[data-theme='dark'] .button {
+  --btn-primary-bg:           var(--color-brand);
+  --btn-primary-bg-hover:     #7abef8;
+  --btn-primary-bg-pressed:   #8ecbf9;
+
+  --btn-secondary-bg:         transparent;
+  --btn-secondary-bg-hover:   var(--color-blue-100);
+  --btn-secondary-bg-pressed: var(--color-blue-200);
+  --btn-secondary-text:       var(--color-brand);
+  --btn-secondary-border:     var(--color-brand);
+
+  --btn-tertiary-bg:          transparent;
+  --btn-tertiary-bg-hover:    var(--color-blue-100);
+  --btn-tertiary-bg-pressed:  var(--color-blue-200);
+  --btn-tertiary-text:        var(--color-brand);
+
+  --btn-danger-bg:            var(--color-accent-red-primary);
+  --btn-danger-bg-hover:      #ff9385;
+  --btn-danger-bg-pressed:    #ffaaa0;
+  --btn-danger-text:          #ffffff;
+}
