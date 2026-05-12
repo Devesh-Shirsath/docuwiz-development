@@ -1,0 +1,322 @@
+/* =============================================================================
+   INPUT — label, field wrapper, states, icons, prefix/suffix
+   ============================================================================= */
+
+/* ── Wrapper ──────────────────────────────────────────────────────────────── */
+.wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.wrapperFullWidth {
+  display: flex;
+  width: 100%;
+}
+
+/* ── Label ────────────────────────────────────────────────────────────────── */
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  cursor: default;
+}
+
+.labelText {
+  font: var(--typography-body-s-medium);
+  color: var(--color-font-primary);
+}
+
+.required {
+  font: var(--typography-body-s-medium);
+  color: var(--color-accent-red-primary);
+}
+
+.optional {
+  font: var(--typography-body-xs-regular);
+  color: var(--color-font-tertiary);
+}
+
+/* ── Field (the border container) ────────────────────────────────────────── */
+.field {
+  display: flex;
+  align-items: center;
+  background: var(--color-gray-100);
+  border: 1.5px solid var(--color-stroke-gray-primary);
+  border-radius: var(--radius-input);
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  width: 100%;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover */
+.field:not(.fieldDisabled):not(.fieldReadonly):hover {
+  border-color: var(--color-stroke-gray-secondary);
+  background: var(--color-surface-l2);
+}
+
+/* Focus-within */
+.field:not(.fieldDisabled):not(.fieldReadonly):focus-within {
+  border-color: var(--color-brand-accent);
+  background: var(--color-gray-100);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-accent) 20%, transparent);
+  outline: none;
+}
+
+/* Sizes */
+.field_medium {
+  height: 36px;
+  padding: 0 var(--space-4);
+  gap: var(--space-2);
+}
+
+.field_small {
+  height: 28px;
+  padding: 0 var(--space-3);
+  gap: var(--space-1);
+}
+
+/* ── Validation States ────────────────────────────────────────────────────── */
+.field_error {
+  border-color: var(--color-accent-red-secondary);
+  background: color-mix(in srgb, var(--color-accent-red-tertiary) 60%, var(--color-gray-100));
+}
+
+.field_error:not(.fieldDisabled):hover {
+  border-color: var(--color-accent-red-primary);
+  background: var(--color-accent-red-tertiary);
+}
+
+.field_error:not(.fieldDisabled):focus-within {
+  border-color: var(--color-accent-red-primary);
+  background: var(--color-gray-100);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-red-primary) 20%, transparent);
+}
+
+.field_success {
+  border-color: var(--color-accent-green-secondary);
+  background: color-mix(in srgb, var(--color-accent-green-tertiary) 60%, var(--color-gray-100));
+}
+
+.field_success:not(.fieldDisabled):hover {
+  border-color: var(--color-accent-green-primary);
+  background: var(--color-accent-green-tertiary);
+}
+
+.field_success:not(.fieldDisabled):focus-within {
+  border-color: var(--color-accent-green-primary);
+  background: var(--color-gray-100);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-green-primary) 20%, transparent);
+}
+
+.field_warning {
+  border-color: var(--color-amber-600);
+  background: color-mix(in srgb, var(--color-amber-100) 60%, var(--color-gray-100));
+}
+
+.field_warning:not(.fieldDisabled):hover {
+  border-color: var(--color-amber-900);
+  background: var(--color-amber-100);
+}
+
+.field_warning:not(.fieldDisabled):focus-within {
+  border-color: var(--color-amber-900);
+  background: var(--color-gray-100);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-amber-900) 20%, transparent);
+}
+
+/* ── Disabled ─────────────────────────────────────────────────────────────── */
+.fieldDisabled {
+  background: var(--color-surface-l2);
+  border-color: var(--color-stroke-gray-primary);
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Read-only ────────────────────────────────────────────────────────────── */
+.fieldReadonly {
+  background: var(--color-surface-l2);
+  border-color: var(--color-stroke-gray-primary);
+}
+
+.fieldReadonly:focus-within {
+  border-color: var(--color-stroke-gray-secondary);
+  box-shadow: none;
+}
+
+/* ── Actual <input> ───────────────────────────────────────────────────────── */
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--color-font-primary);
+  caret-color: var(--color-brand-accent);
+  padding: 0;
+}
+
+.field_small .input {
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.input::placeholder {
+  color: var(--color-font-tertiary);
+  opacity: 1;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  color: var(--color-font-disabled);
+}
+
+.input[readonly] {
+  cursor: default;
+  color: var(--color-font-secondary);
+  user-select: text;
+}
+
+/* ── Leading / trailing icons ─────────────────────────────────────────────── */
+.leadingIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+  pointer-events: none;
+}
+
+.trailingIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+  pointer-events: none;
+}
+
+.field_error .trailingIcon,
+.field_error .leadingIcon { color: var(--color-accent-red-secondary); }
+.field_success .trailingIcon,
+.field_success .leadingIcon { color: var(--color-accent-green-secondary); }
+.field_warning .trailingIcon,
+.field_warning .leadingIcon { color: var(--color-amber-600); }
+
+.field:focus-within .leadingIcon,
+.field:focus-within .trailingIcon {
+  color: var(--color-brand-accent);
+}
+
+.field_error:focus-within .leadingIcon,
+.field_error:focus-within .trailingIcon { color: var(--color-accent-red-primary); }
+.field_success:focus-within .leadingIcon,
+.field_success:focus-within .trailingIcon { color: var(--color-accent-green-primary); }
+.field_warning:focus-within .leadingIcon,
+.field_warning:focus-within .trailingIcon { color: var(--color-amber-900); }
+
+/* Trailing action (interactive element) */
+.trailingAction {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: calc(var(--space-1) * -1);
+}
+
+/* ── Prefix / Suffix ──────────────────────────────────────────────────────── */
+.prefix,
+.suffix {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-font-tertiary);
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.prefix { padding-right: var(--space-1); }
+.suffix { padding-left: var(--space-1); }
+
+/* Divider between prefix/suffix and input */
+.prefix::after {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--color-stroke-gray-primary);
+  vertical-align: middle;
+  margin-left: var(--space-2);
+}
+
+.suffix::before {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--color-stroke-gray-primary);
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+
+/* ── Helper / state message ───────────────────────────────────────────────── */
+.helper {
+  font: var(--typography-body-xs-regular);
+  color: var(--color-font-tertiary);
+  line-height: 18px;
+}
+
+.helper_error   { color: var(--color-accent-red-primary); }
+.helper_success { color: var(--color-accent-green-primary); }
+.helper_warning { color: var(--color-amber-900); }
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .field {
+  background: var(--color-gray-1100);
+  border-color: var(--color-gray-1000);
+}
+
+[data-theme='dark'] .field:not(.fieldDisabled):not(.fieldReadonly):hover {
+  background: var(--color-gray-1000);
+  border-color: var(--color-gray-900);
+}
+
+[data-theme='dark'] .field:not(.fieldDisabled):not(.fieldReadonly):focus-within {
+  background: var(--color-gray-1100);
+  border-color: var(--color-brand-accent);
+}
+
+[data-theme='dark'] .fieldDisabled,
+[data-theme='dark'] .fieldReadonly {
+  background: var(--color-gray-1200);
+  border-color: var(--color-gray-1100);
+}
+
+[data-theme='dark'] .field_error {
+  background: color-mix(in srgb, var(--color-red-900) 12%, var(--color-gray-1100));
+  border-color: var(--color-accent-red-secondary);
+}
+
+[data-theme='dark'] .field_error:focus-within {
+  background: var(--color-gray-1100);
+}
+
+[data-theme='dark'] .field_success {
+  background: color-mix(in srgb, var(--color-green-900) 12%, var(--color-gray-1100));
+  border-color: var(--color-accent-green-secondary);
+}
+
+[data-theme='dark'] .field_warning {
+  background: color-mix(in srgb, var(--color-amber-900) 12%, var(--color-gray-1100));
+  border-color: var(--color-amber-600);
+}
+
+[data-theme='dark'] .prefix,
+[data-theme='dark'] .suffix {
+  color: var(--color-font-tertiary);
+}
