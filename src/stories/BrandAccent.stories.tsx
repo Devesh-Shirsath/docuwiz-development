@@ -59,7 +59,7 @@ const BrandDemo = ({
 );
 
 const meta: Meta = {
-  title: 'DocuWiz Design System/Brand Accent',
+  title: 'Foundation/Brand Accent',
   parameters: {
     layout: 'padded',
     docs: {

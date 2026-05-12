@@ -6,7 +6,7 @@ import type { IconWeight } from '@phosphor-icons/react';
 
 /* ── Meta ───────────────────────────────────────────────────────────────── */
 const meta: Meta<typeof Input> = {
-  title: 'DocuWiz Design System/Input',
+  title: 'Components/Input',
   component: Input,
   parameters: {
     layout: 'padded',

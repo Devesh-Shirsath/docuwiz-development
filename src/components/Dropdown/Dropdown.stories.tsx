@@ -7,7 +7,7 @@ import type { IconWeight } from '@phosphor-icons/react';
 
 /* ── Meta ───────────────────────────────────────────────────────────────── */
 const meta: Meta<typeof Dropdown> = {
-  title: 'DocuWiz Design System/Dropdown',
+  title: 'Components/Dropdown',
   component: Dropdown,
   parameters: {
     layout: 'padded',

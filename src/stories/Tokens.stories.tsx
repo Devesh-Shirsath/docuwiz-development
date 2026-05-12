@@ -122,7 +122,7 @@ const TokensPage = () => (
 );
 
 const meta: Meta = {
-  title: 'DocuWiz Design System/Tokens',
+  title: 'Foundation/Tokens',
   component: TokensPage,
   tags: ['autodocs'],
   parameters: {

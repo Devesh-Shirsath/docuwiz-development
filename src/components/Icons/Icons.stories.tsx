@@ -95,7 +95,7 @@ const WeightShowcase = ({ iconName, size }: { iconName: string; size: number }) 
    META
    ============================================================ */
 const meta: Meta = {
-  title: 'DocuWiz Design System/Icons',
+  title: 'Components/Icons',
   parameters: {
     layout: 'fullscreen',
     docs: {

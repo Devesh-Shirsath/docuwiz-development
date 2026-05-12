@@ -59,7 +59,7 @@ const RadiusShowcase = () => (
 );
 
 const meta: Meta = {
-  title: 'DocuWiz Design System/Radius Modes',
+  title: 'Foundation/Radius Modes',
   parameters: { layout: 'fullscreen' },
 };
 export default meta;
