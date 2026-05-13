@@ -8,7 +8,7 @@
   --btn-primary-bg:           var(--color-brand-accent);
   --btn-primary-bg-hover:     var(--color-brand-accent-hover);
   --btn-primary-bg-pressed:   var(--color-brand-accent-pressed);
-  --btn-primary-text:         #ffffff;
+  --btn-primary-text:         var(--color-font-static-white);
 
   /* Secondary */
   --btn-secondary-bg:         transparent;
@@ -25,9 +25,9 @@
 
   /* Danger */
   --btn-danger-bg:            var(--color-accent-red-primary);
-  --btn-danger-bg-hover:      #b81410;
-  --btn-danger-bg-pressed:    #9e120e;
-  --btn-danger-text:          #ffffff;
+  --btn-danger-bg-hover:      var(--color-danger-hover);
+  --btn-danger-bg-pressed:    var(--color-danger-pressed);
+  --btn-danger-text:          var(--color-font-static-white);
 }
 
 /* --- Base --- */
@@ -203,10 +203,5 @@
   to { transform: rotate(360deg); }
 }
 
-/* Dark mode: primary/secondary/tertiary colors cascade automatically
-   from [data-theme="dark"] overrides in tokens.css.
-   Only danger needs explicit overrides since it uses fixed hex values. */
-[data-theme='dark'] .button {
-  --btn-danger-bg-hover:   #ff9385;
-  --btn-danger-bg-pressed: #ffaaa0;
-}
+/* Dark mode: all colors cascade automatically from [data-theme="dark"]
+   overrides in tokens.css — including danger hover/pressed via color-mix. */

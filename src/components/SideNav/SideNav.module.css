@@ -229,7 +229,7 @@
   line-height: 16px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-font-static-white);
   /* Prevent badge from being cropped on hover */
   margin-left: auto;
 }

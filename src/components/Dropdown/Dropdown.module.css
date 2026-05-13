@@ -66,7 +66,7 @@
 /* Variant — primary */
 .trigger_primary {
   background: var(--color-brand-accent);
-  color: #fff;
+  color: var(--color-font-static-white);
   border: 1.5px solid transparent;
 }
 
@@ -336,7 +336,7 @@
   border: 1.5px solid var(--color-stroke-gray-secondary);
   background: var(--color-gray-100);
   transition: background 120ms ease, border-color 120ms ease;
-  color: #fff;
+  color: var(--color-font-static-white);
 }
 
 .checkboxChecked {

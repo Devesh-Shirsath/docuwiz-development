@@ -145,6 +145,18 @@
   --color-amber-1200: #482900;
 
   --color-brand: #0265dc;
+
+  /* --- Static tokens — never change with theme --- */
+  /* Use only when a surface always needs white text regardless of mode
+     (e.g. solid-fill method badges, primary button label). */
+  --color-font-static-white: #ffffff;
+
+  /* --- Danger interaction states
+     Derived from --color-accent-red-primary via color-mix so they
+     automatically adapt when the primitive red scale flips in dark mode. --- */
+  --color-danger-hover:   color-mix(in srgb, var(--color-accent-red-primary) 83%, black);
+  --color-danger-pressed: color-mix(in srgb, var(--color-accent-red-primary) 70%, black);
+
   /* Brand accent — the interactive/action color.
      Defaults to --color-brand (single-brand workspaces need no config).
      Dual-brand workspaces override this with their CTA color (e.g. magenta).
@@ -437,12 +449,23 @@
   --color-orange-900:  #f98917;
   --color-orange-1200: #fdd291;
 
+  /* Amber scale flip */
+  --color-amber-100:  #352400;
+  --color-amber-200:  #442f00;
+  --color-amber-600:  #704300;
+  --color-amber-900:  #c48600;
+  --color-amber-1200: #e8a600;
+
   --color-brand: #5eaaf7;
   --color-brand-accent:         var(--color-brand);
-  --color-brand-accent-hover:   #7abef8;
-  --color-brand-accent-pressed: #8ecbf9;
+  --color-brand-accent-hover:   color-mix(in srgb, var(--color-brand) 85%, white);
+  --color-brand-accent-pressed: color-mix(in srgb, var(--color-brand) 75%, white);
 
-  /* HTTP Methods flip */
+  /* Danger interaction states — go lighter in dark mode (base is already bright) */
+  --color-danger-hover:   color-mix(in srgb, var(--color-accent-red-primary) 85%, white);
+  --color-danger-pressed: color-mix(in srgb, var(--color-accent-red-primary) 75%, white);
+
+  /* HTTP Method tint chips flip (muted for dark surfaces) */
   --color-method-get:     #42536e;
   --color-method-post:    #71425c;
   --color-method-put:     #6c423f;
@@ -452,7 +475,19 @@
   --color-method-head:    #5a426e;
   --color-method-trace:   #626364;
 
-  /* Semantic tokens re-derive automatically from updated base vars above */
+  /* HTTP Method tag badge backgrounds flip to match muted dark palette */
+  --color-tag-get:     #42536e;
+  --color-tag-post:    #71425c;
+  --color-tag-put:     #6c423f;
+  --color-tag-patch:   #706032;
+  --color-tag-delete:  #3e5b46;
+  --color-tag-options: #3b6269;
+  --color-tag-head:    #5a426e;
+  --color-tag-trace:   #626364;
+
+  /* All semantic tokens (font, stroke, surface, accent, icon) re-derive
+     automatically because they reference the primitive vars flipped above.
+     No overrides needed here. */
 }
 
 /* ---------------------------------------------------------------------------
