@@ -1,0 +1,265 @@
+/* =============================================================================
+   SIDE NAV — container, section headers, collapsible groups, leaf items,
+   HTTP method badges, dividers
+   ============================================================================= */
+
+/* ── Container ────────────────────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 200px;
+  max-width: 280px;
+  padding: 12px 0 8px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-500) transparent;
+}
+
+.nav::-webkit-scrollbar { width: 3px; }
+.nav::-webkit-scrollbar-track { background: transparent; }
+.nav::-webkit-scrollbar-thumb { background: var(--color-gray-500); border-radius: 4px; }
+
+/* ── Divider ──────────────────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-stroke-gray-primary);
+  margin: 8px 0;
+}
+
+/* ── Section label — uppercase flat divider (e.g. "REFERENCES") ───────────── */
+.sectionLabel {
+  padding: 12px 12px 4px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-font-tertiary);
+  user-select: none;
+}
+
+/* ── Section header — icon + bold label (Category / Product) ──────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 6px;
+}
+
+.sectionIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+}
+
+.sectionText {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  color: var(--color-font-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Collapsible group ────────────────────────────────────────────────────── */
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.groupTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: var(--color-font-tertiary);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  outline: none;
+  transition: background 100ms ease, color 100ms ease;
+  border-radius: 0;
+}
+
+.groupTrigger:hover:not(:disabled) {
+  background: var(--color-surface-l2);
+  color: var(--color-font-secondary);
+}
+
+.groupTrigger:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-brand-accent);
+}
+
+.groupTriggerExpanded {
+  color: var(--color-font-secondary);
+}
+
+.groupCaret {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+  opacity: 0.7;
+}
+
+.groupLeadingIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+}
+
+.groupLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.groupWarning {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-accent-orange-secondary);
+  margin-left: auto;
+}
+
+.groupChildren {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Leaf item ────────────────────────────────────────────────────────────── */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  /* 16px left padding; box-shadow draws the left indicator without affecting layout */
+  padding: 6px 12px 6px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: var(--color-font-tertiary);
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  outline: none;
+  /* 1px gray left indicator */
+  box-shadow: inset 1px 0 0 var(--color-stroke-gray-primary);
+  transition: background 100ms ease, color 100ms ease, box-shadow 100ms ease;
+}
+
+.item:hover:not(:disabled):not(.itemActive) {
+  background: var(--color-surface-l2);
+  color: var(--color-font-secondary);
+  box-shadow: inset 1px 0 0 var(--color-stroke-gray-secondary);
+}
+
+.item:focus-visible {
+  box-shadow: inset 1px 0 0 var(--color-brand-accent),
+              0 0 0 2px color-mix(in srgb, var(--color-brand-accent) 30%, transparent);
+}
+
+/* Active — 2px brand left border, elevated background */
+.itemActive {
+  background: var(--color-surface-l2);
+  color: var(--color-font-primary);
+  font-weight: 500;
+  box-shadow: inset 2px 0 0 var(--color-brand-accent);
+}
+
+.itemActive:hover {
+  background: var(--color-surface-l2);
+}
+
+.itemDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.itemIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
+  opacity: 0.75;
+}
+
+.itemActive .itemIcon {
+  color: var(--color-brand-accent);
+  opacity: 1;
+}
+
+.itemLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── HTTP method badge ────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 4px;
+  height: 16px;
+  border-radius: var(--radius-badge);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  /* Prevent badge from being cropped on hover */
+  margin-left: auto;
+}
+
+.badge_get     { background: var(--color-tag-get);     }
+.badge_post    { background: var(--color-tag-post);    }
+.badge_put     { background: var(--color-tag-put);     }
+.badge_patch   { background: var(--color-tag-patch);   }
+.badge_delete  { background: var(--color-tag-delete);  }
+.badge_head    { background: var(--color-tag-head);    }
+.badge_options { background: var(--color-tag-options); }
+.badge_trace   { background: var(--color-tag-trace);   }
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .divider {
+  border-top-color: var(--color-gray-1000);
+}
+
+[data-theme='dark'] .sectionText {
+  color: var(--color-font-primary);
+}
+
+[data-theme='dark'] .groupTrigger:hover:not(:disabled) {
+  background: var(--color-gray-1100);
+}
+
+[data-theme='dark'] .item:hover:not(:disabled):not(.itemActive) {
+  background: var(--color-gray-1100);
+}
+
+[data-theme='dark'] .itemActive {
+  background: var(--color-gray-1100);
+}

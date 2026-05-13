@@ -154,7 +154,7 @@
   --color-brand-accent-hover:   #0255c0;
   --color-brand-accent-pressed: #024fb5;
 
-  /* --- HTTP Methods (Light) --- */
+  /* --- HTTP Methods — tinted surface chips (Light) --- */
   --color-method-get:     #d0e1fc;
   --color-method-post:    #ffd1ea;
   --color-method-put:     #fad1cd;
@@ -163,6 +163,16 @@
   --color-method-options: #c9f0f7;
   --color-method-head:    #e8d0fd;
   --color-method-trace:   #f0f1f3;
+
+  /* --- HTTP Method Tag Colors — solid-fill badge backgrounds --- */
+  --color-tag-get:     #5893f4;   /* blue   */
+  --color-tag-post:    #52b773;   /* green  */
+  --color-tag-put:     #f5a841;   /* amber  */
+  --color-tag-patch:   #c8973a;   /* dark amber */
+  --color-tag-delete:  #e05d5d;   /* red    */
+  --color-tag-head:    #b16df1;   /* purple */
+  --color-tag-options: #4ec9c9;   /* teal   */
+  --color-tag-trace:   #8c8c8c;   /* gray   */
 
   /* --- Semantic: Font (Light) --- */
   --color-font-primary:   var(--color-gray-1000);
