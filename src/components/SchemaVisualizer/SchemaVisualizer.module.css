@@ -555,6 +555,17 @@
   margin: 0;
 }
 
+/* ── Field highlight — flashes when navigated from the tree ──────────────── */
+.fieldRowHighlighted {
+  border-radius: var(--radius-badge);
+  animation: fieldHighlight 2.2s ease-out forwards;
+}
+
+@keyframes fieldHighlight {
+  0%,  35% { background: var(--color-accent-blue-tertiary); }
+  100%      { background: transparent; }
+}
+
 /* ── Empty state ──────────────────────────────────────────────────────────── */
 .empty {
   display: flex;

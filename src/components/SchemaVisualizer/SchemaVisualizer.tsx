@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   SidebarSimple,
   Article,
@@ -92,7 +92,8 @@ function BreadcrumbBar({ entries, onNavigate }: BreadcrumbBarProps) {
 interface SchemaTreeProps {
   nodes: TreeNode[];
   contentType: string;
-  currentPath: string[];
+  /** Normalized breadcrumb path ([] suffixes stripped). */
+  breadcrumbKeys: string[];
   collapsedPaths: Set<string>;
   onToggleCollapse: (pathKey: string) => void;
   onNodeClick: (node: TreeNode) => void;
@@ -101,33 +102,30 @@ interface SchemaTreeProps {
 function SchemaTree({
   nodes,
   contentType,
-  currentPath,
+  breadcrumbKeys,
   collapsedPaths,
   onToggleCollapse,
   onNodeClick,
 }: SchemaTreeProps) {
-  /** Check whether a node is an ancestor of the current breadcrumb path */
   const isOnPath = (nodePath: string[]) => {
-    if (nodePath.length > currentPath.length) return false;
-    return nodePath.every((seg, i) => seg === currentPath[i]);
+    if (nodePath.length > breadcrumbKeys.length) return false;
+    return nodePath.every((seg, i) => seg === breadcrumbKeys[i]);
   };
 
   const isCurrent = (nodePath: string[]) =>
-    nodePath.length === currentPath.length &&
-    nodePath.every((seg, i) => seg === currentPath[i]);
+    nodePath.length === breadcrumbKeys.length &&
+    nodePath.every((seg, i) => seg === breadcrumbKeys[i]);
 
-  /** Determine if a node should be hidden (an ancestor is collapsed) */
   const isHidden = (node: TreeNode): boolean => {
     for (let d = 1; d < node.path.length; d++) {
-      const ancestorKey = node.path.slice(0, d).join('\0');
-      if (collapsedPaths.has(ancestorKey)) return true;
+      if (collapsedPaths.has(node.path.slice(0, d).join('\0'))) return true;
     }
     return false;
   };
 
   return (
     <div className={styles.tree}>
-      {/* Header: content type selector */}
+      {/* Header: content type */}
       <div className={styles.treeHeader}>
         <span className={styles.treeHeaderIcon}>
           <TreeStructure size={14} />
@@ -145,8 +143,7 @@ function SchemaTree({
           const pathKey = node.path.join('\0');
           const isCollapsed = collapsedPaths.has(pathKey);
           const active = isCurrent(node.path);
-          const onPath = isOnPath(node.path);
-
+          const onPath = !active && isOnPath(node.path);
           const indent = 16 + node.depth * 22;
 
           return (
@@ -158,17 +155,12 @@ function SchemaTree({
               className={[
                 styles.treeRow,
                 active ? styles.treeRowActive : '',
-                !active && onPath ? styles.treeRowOnPath : '',
+                onPath ? styles.treeRowOnPath : '',
               ].join(' ')}
               style={{ paddingLeft: indent }}
-              onClick={() => {
-                if (node.hasChildren) {
-                  onToggleCollapse(pathKey);
-                }
-                onNodeClick(node);
-              }}
+              onClick={() => onNodeClick(node)}
             >
-              {/* Expand / collapse caret */}
+              {/* Expand / collapse caret — separate click target */}
               {node.hasChildren && (
                 <span
                   className={[
@@ -177,17 +169,18 @@ function SchemaTree({
                   ].join(' ')}
                   style={{ left: indent - 14 }}
                   aria-hidden
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleCollapse(pathKey);
+                  }}
                 >
                   <CaretRight size={10} weight="bold" />
                 </span>
               )}
 
-              {/* Type icon */}
               <span className={styles.treeIcon}>
                 <DataTypeIcon type={node.type} size={14} />
               </span>
-
-              {/* Field name */}
               <span className={styles.treeLabel}>{node.key}</span>
             </button>
           );
@@ -214,21 +207,23 @@ function FieldRow({ fieldName, schema, defs, required, onViewProperties }: Field
   const chips = getConstraintChips(resolved);
   const navigable = getNavigableSchema(resolved, defs);
 
-  const typeLabel = type === 'array'
-    ? (() => {
-        const items = Array.isArray(resolved.items) ? resolved.items[0] : resolved.items;
-        if (items) {
-          const itemsResolved = resolveSchema(items, defs);
-          const itemType = getEffectiveType(itemsResolved);
-          return `array[${itemType}]`;
-        }
-        return 'array';
-      })()
-    : type;
+  // Human-readable type label
+  const typeLabel = (() => {
+    if (type === 'array') {
+      const items = Array.isArray(resolved.items) ? resolved.items[0] : resolved.items;
+      if (items) {
+        const itemType = getEffectiveType(resolveSchema(items, defs));
+        return `array[${itemType}]`;
+      }
+      return 'array';
+    }
+    if (type === 'oneOf') return resolved.oneOf?.map((s, i) => resolveSchema(s, defs).title ?? `option${i + 1}`).join(' | ') ?? 'oneOf';
+    if (type === 'anyOf') return resolved.anyOf?.map((s, i) => resolveSchema(s, defs).title ?? `option${i + 1}`).join(' | ') ?? 'anyOf';
+    return type;
+  })();
 
   return (
     <div className={styles.fieldRow}>
-      {/* Name + type + required */}
       <div className={styles.fieldTop}>
         <span className={styles.fieldIcon}>
           <DataTypeIcon type={type} size={18} />
@@ -236,16 +231,14 @@ function FieldRow({ fieldName, schema, defs, required, onViewProperties }: Field
         <div className={styles.fieldMeta}>
           <span className={styles.fieldName}>{fieldName}</span>
           <span className={styles.fieldType}>{typeLabel}</span>
-          {required && <span className={styles.fieldRequired}>*</span>}
+          {required && <span className={styles.fieldRequired} title="Required">*</span>}
         </div>
       </div>
 
-      {/* Description */}
       {resolved.description && (
         <p className={styles.fieldDesc}>{resolved.description}</p>
       )}
 
-      {/* Constraint chips */}
       {chips.length > 0 && (
         <div className={styles.chipsRow} aria-label="Constraints">
           {chips.map((chip, i) => (
@@ -254,14 +247,9 @@ function FieldRow({ fieldName, schema, defs, required, onViewProperties }: Field
         </div>
       )}
 
-      {/* View Properties (object / array-of-objects) */}
       {navigable && (
         <div>
-          <button
-            type="button"
-            className={styles.viewProps}
-            onClick={onViewProperties}
-          >
+          <button type="button" className={styles.viewProps} onClick={onViewProperties}>
             View Properties
             <ArrowRight size={12} weight="bold" />
           </button>
@@ -287,8 +275,8 @@ export function SchemaVisualizer({
   const [activeTab, setActiveTab] = useState<'schema' | 'example'>(defaultTab);
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
 
-  // Breadcrumb: stack of nav entries. Starts at root schema.
-  const rootResolved = resolveSchema(schema, definitions);
+  const rootResolved = useMemo(() => resolveSchema(schema, definitions), [schema, definitions]);
+
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbEntry[]>([
     {
       label: schemaName,
@@ -297,25 +285,53 @@ export function SchemaVisualizer({
     },
   ]);
 
+  /* ── Scroll / highlight state ───────────────────────────────────────────── */
+  /** Field key to scroll into view after the next render. */
+  const [scrollTarget, setScrollTarget] = useState<string | null>(null);
+  /** Field key currently flashing with the highlight animation. */
+  const [highlightedField, setHighlightedField] = useState<string | null>(null);
+  /** Map of field key → DOM element for the field rows at the current level. */
+  const fieldRefsMap = useRef<Record<string, HTMLElement | null>>({});
+  /** Ref to the scrollable schema content div (for scroll-to-top). */
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+
+  /* ── Scroll effect — runs after render when scrollTarget is set ─────────── */
+  useEffect(() => {
+    if (!scrollTarget) return;
+    const el = fieldRefsMap.current[scrollTarget];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setHighlightedField(scrollTarget);
+      setScrollTarget(null);
+    }
+  }, [scrollTarget, breadcrumb]); // re-check after breadcrumb change (new fields mounted)
+
+  /* ── Highlight timeout — clear after animation completes ────────────────── */
+  useEffect(() => {
+    if (!highlightedField) return;
+    const t = setTimeout(() => setHighlightedField(null), 2200);
+    return () => clearTimeout(t);
+  }, [highlightedField]);
+
   /* ── Derived data ───────────────────────────────────────────────────────── */
   const current = breadcrumb[breadcrumb.length - 1];
   const currentSchema = current.schema;
   const currentRequired = current.requiredFields;
-
   const currentType = getEffectiveType(currentSchema);
   const properties = currentSchema.properties ?? {};
 
-  // Build flat tree nodes once
   const treeNodes = useMemo<TreeNode[]>(() => {
     const out: TreeNode[] = [];
     buildFlatTree(rootResolved, definitions, schemaName, 0, [], out);
     return out;
   }, [rootResolved, definitions, schemaName]);
 
-  // Current path in terms of the tree (last breadcrumb path)
-  const currentTreePath = breadcrumb.map(e => e.label);
+  /** Normalized breadcrumb path with [] suffixes stripped — used for tree highlight. */
+  const breadcrumbKeys = useMemo(
+    () => breadcrumb.map(e => e.label.replace(/\[\]$/, '')),
+    [breadcrumb]
+  );
 
-  /* ── Example JSON ───────────────────────────────────────────────────────── */
   const exampleJson = useMemo(
     () => JSON.stringify(generateExample(currentSchema, definitions), null, 2),
     [currentSchema, definitions]
@@ -326,6 +342,7 @@ export function SchemaVisualizer({
     setBreadcrumb(prev => prev.slice(0, index + 1));
   };
 
+  /** View Properties → button: navigate INTO the field. */
   const handleViewProperties = (fieldName: string, fieldSchema: JSONSchema) => {
     const resolved = resolveSchema(fieldSchema, definitions);
     const navTarget = getNavigableSchema(resolved, definitions);
@@ -345,23 +362,38 @@ export function SchemaVisualizer({
     ]);
   };
 
+  /**
+   * Tree click: navigate breadcrumb to the PARENT of the clicked node,
+   * then scroll the right panel to the clicked field.
+   * This keeps the flat view stable — clicking the tree never opens an object
+   * directly; it scrolls to it instead.
+   */
   const handleTreeNodeClick = (node: TreeNode) => {
-    // Navigate breadcrumb to the clicked node's path
-    if (node.path.length === 0) return;
+    const fieldKey = node.path[node.path.length - 1];
 
-    // Walk down from root schema to reconstruct breadcrumb
-    let currentS = rootResolved;
-    const newBreadcrumb: BreadcrumbEntry[] = [
-      {
+    // Clicking the root node → reset to root, scroll content to top
+    if (node.path.length === 1) {
+      setBreadcrumb([{
         label: schemaName,
         schema: rootResolved,
         requiredFields: new Set(rootResolved.required ?? []),
-      },
-    ];
+      }]);
+      contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-    for (let i = 1; i < node.path.length; i++) {
-      const key = node.path[i];
-      const prop = currentS.properties?.[key];
+    // Walk the parent path to rebuild the breadcrumb up to (but not including) this node
+    const parentPath = node.path.slice(0, -1); // e.g. ['Root', 'applicantAddress']
+    let walkSchema = rootResolved;
+    const newBreadcrumb: BreadcrumbEntry[] = [{
+      label: schemaName,
+      schema: rootResolved,
+      requiredFields: new Set(rootResolved.required ?? []),
+    }];
+
+    for (let i = 1; i < parentPath.length; i++) {
+      const key = parentPath[i];
+      const prop = walkSchema.properties?.[key];
       if (!prop) break;
 
       const resolved = resolveSchema(prop, definitions);
@@ -375,10 +407,12 @@ export function SchemaVisualizer({
         requiredFields: new Set(nav.required ?? []),
         isArrayItems: type === 'array',
       });
-      currentS = nav;
+      walkSchema = nav;
     }
 
+    // Navigate breadcrumb to parent level, then scroll to the clicked field
     setBreadcrumb(newBreadcrumb);
+    setScrollTarget(fieldKey);
   };
 
   const handleToggleCollapse = (pathKey: string) => {
@@ -399,7 +433,7 @@ export function SchemaVisualizer({
         <SchemaTree
           nodes={treeNodes}
           contentType={contentType}
-          currentPath={currentTreePath}
+          breadcrumbKeys={breadcrumbKeys}
           collapsedPaths={collapsedPaths}
           onToggleCollapse={handleToggleCollapse}
           onNodeClick={handleTreeNodeClick}
@@ -411,7 +445,6 @@ export function SchemaVisualizer({
 
         {/* Toolbar */}
         <div className={styles.toolbar}>
-          {/* Sidebar toggle */}
           <button
             type="button"
             className={styles.toolbarToggle}
@@ -422,35 +455,28 @@ export function SchemaVisualizer({
             <SidebarSimple size={14} />
           </button>
 
-          {/* Breadcrumb */}
           <BreadcrumbBar entries={breadcrumb} onNavigate={handleNavigateTo} />
 
-          {/* Schema / Example toggle */}
           <div className={styles.segmented}>
             <div className={styles.segmentedInner}>
-              <button
-                type="button"
-                className={[styles.segmentBtn, activeTab === 'schema' ? styles.segmentBtnActive : ''].join(' ')}
-                onClick={() => setActiveTab('schema')}
-              >
-                Schema
-              </button>
-              <button
-                type="button"
-                className={[styles.segmentBtn, activeTab === 'example' ? styles.segmentBtnActive : ''].join(' ')}
-                onClick={() => setActiveTab('example')}
-              >
-                Example
-              </button>
+              {(['schema', 'example'] as const).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={[styles.segmentBtn, activeTab === tab ? styles.segmentBtnActive : ''].join(' ')}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
         {/* ── Schema tab ─────────────────────────────────────────────────── */}
         {activeTab === 'schema' && (
-          <div className={styles.schemaContent}>
+          <div className={styles.schemaContent} ref={contentScrollRef}>
 
-            {/* Object header */}
             <div className={styles.schemaHeader}>
               <div className={styles.schemaHeaderIcon}>
                 <DataTypeIcon type={currentType} size={20} />
@@ -459,7 +485,7 @@ export function SchemaVisualizer({
                 <div className={styles.schemaHeaderTitle}>
                   <span className={styles.schemaName}>{current.label}</span>
                   <span className={styles.schemaTypeLabel}>
-                    {current.isArrayItems ? `array[object]` : currentType}
+                    {current.isArrayItems ? 'array[object]' : currentType}
                   </span>
                 </div>
                 {currentSchema.description && (
@@ -468,13 +494,17 @@ export function SchemaVisualizer({
               </div>
             </div>
 
-            {/* Properties list */}
             {Object.keys(properties).length > 0 ? (
               <>
                 <span className={styles.propertiesLabel}>Properties</span>
                 <div role="list">
                   {Object.entries(properties).map(([key, fieldSchema]) => (
-                    <div key={key} role="listitem">
+                    <div
+                      key={key}
+                      role="listitem"
+                      ref={el => { fieldRefsMap.current[key] = el; }}
+                      className={highlightedField === key ? styles.fieldRowHighlighted : ''}
+                    >
                       <FieldRow
                         fieldName={key}
                         schema={fieldSchema}
@@ -487,9 +517,7 @@ export function SchemaVisualizer({
                 </div>
               </>
             ) : (
-              <div className={styles.empty}>
-                No properties defined at this level.
-              </div>
+              <div className={styles.empty}>No properties defined at this level.</div>
             )}
           </div>
         )}

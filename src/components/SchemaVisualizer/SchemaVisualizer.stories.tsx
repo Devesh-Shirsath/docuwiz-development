@@ -232,9 +232,417 @@ const userSchema: JSONSchema = {
   },
 };
 
+/* ---------------------------------------------------------------------------
+   Rich "kitchen sink" schema — PaymentTransaction
+   Covers every type, constraint, keyword, and edge case in one realistic API.
+   --------------------------------------------------------------------------- */
+
+const paymentTransactionDefinitions: SchemaDefinitions = {
+  Address: {
+    title: 'Address',
+    type: 'object',
+    description: 'Postal address for billing or shipping.',
+    required: ['line1', 'city', 'country'],
+    properties: {
+      line1:      { type: 'string', description: 'Street address line 1.', maxLength: 255 },
+      line2:      { type: 'string', description: 'Apt, suite, unit, floor, etc.', maxLength: 255, nullable: true },
+      city:       { type: 'string', description: 'City, district, suburb, or town.', maxLength: 100 },
+      state:      { type: 'string', description: 'State, province, or region code.', maxLength: 50, nullable: true },
+      postalCode: { type: 'string', description: 'ZIP or postal code.', pattern: '^[A-Z0-9 \\-]{3,10}$', nullable: true },
+      country:    { type: 'string', description: 'ISO 3166-1 alpha-2 country code.', minLength: 2, maxLength: 2, pattern: '^[A-Z]{2}$', example: 'US' },
+    },
+  },
+  ThreeDSecure: {
+    title: 'ThreeDSecure',
+    type: 'object',
+    description: '3D Secure authentication result attached to a card charge.',
+    properties: {
+      authenticated: { type: 'boolean', description: 'Whether the cardholder was authenticated.' },
+      version:       { type: 'string', enum: ['1.0', '2.0', '2.1', '2.2'], description: '3DS protocol version used.' },
+      cavv:          { type: 'string', description: 'Cardholder Authentication Verification Value.', format: 'byte', readOnly: true },
+      eci:           { type: 'string', description: 'Electronic Commerce Indicator.', pattern: '^[0-9]{2}$' },
+    },
+  },
+  CardPaymentMethod: {
+    title: 'CardPaymentMethod',
+    type: 'object',
+    description: 'Credit or debit card used as payment method.',
+    required: ['type', 'last4', 'brand', 'expMonth', 'expYear'],
+    properties: {
+      type:        { type: 'string', enum: ['card'] },
+      last4:       { type: 'string', description: 'Last 4 digits of the card number.', pattern: '^[0-9]{4}$', example: '4242' },
+      brand:       { type: 'string', enum: ['visa', 'mastercard', 'amex', 'discover', 'diners', 'jcb', 'unionpay'], description: 'Card network.' },
+      expMonth:    { type: 'integer', minimum: 1, maximum: 12, description: 'Two-digit expiration month.' },
+      expYear:     { type: 'integer', minimum: 2024, maximum: 2099, description: 'Four-digit expiration year.' },
+      fingerprint: { type: 'string', description: 'Unique identifier for the card number — same card always produces the same fingerprint.', readOnly: true },
+      funding:     { type: 'string', enum: ['credit', 'debit', 'prepaid', 'unknown'], description: 'Card funding type.' },
+      country:     { type: 'string', minLength: 2, maxLength: 2, description: 'Country of card issuance (ISO 3166-1 alpha-2).' },
+      threeDSecure: { $ref: '#/definitions/ThreeDSecure', nullable: true } as JSONSchema,
+    },
+  },
+  BankTransferPaymentMethod: {
+    title: 'BankTransferPaymentMethod',
+    type: 'object',
+    description: 'ACH bank transfer as the payment method.',
+    required: ['type', 'accountType', 'routingNumber', 'last4'],
+    properties: {
+      type:          { type: 'string', enum: ['bank_transfer'] },
+      accountType:   { type: 'string', enum: ['checking', 'savings'] },
+      routingNumber: { type: 'string', pattern: '^[0-9]{9}$', description: 'ABA routing number.' },
+      last4:         { type: 'string', pattern: '^[0-9]{4}$', description: 'Last 4 digits of the account number.' },
+      bankName:      { type: 'string', nullable: true, description: 'Human-readable bank name.' },
+    },
+  },
+  WalletPaymentMethod: {
+    title: 'WalletPaymentMethod',
+    type: 'object',
+    description: 'Digital wallet (Apple Pay, Google Pay, etc.) as the payment method.',
+    required: ['type', 'walletType'],
+    properties: {
+      type:       { type: 'string', enum: ['wallet'] },
+      walletType: { type: 'string', enum: ['apple_pay', 'google_pay', 'paypal', 'amazon_pay', 'alipay', 'wechat_pay'] },
+      email:      { type: 'string', format: 'email', nullable: true, description: 'Email associated with the wallet account.' },
+      deviceId:   { type: 'string', description: 'Hashed device identifier used during tokenisation.', readOnly: true, nullable: true },
+    },
+  },
+};
+
+const paymentTransactionSchema: JSONSchema = {
+  title: 'PaymentTransaction',
+  type: 'object',
+  description: 'A payment transaction processed through the gateway. Includes the full lifecycle — from authorisation through capture, refunds, and dispute handling.',
+  required: ['id', 'amount', 'currency', 'status', 'paymentMethod', 'payer', 'createdAt'],
+  properties: {
+
+    /* ── Identifiers ──────────────────────────────────────────────────────── */
+    id: {
+      type: 'string',
+      format: 'uuid',
+      description: 'Unique transaction ID assigned by the gateway.',
+      readOnly: true,
+      example: 'txn_01hzq2k8xvf3p9n4re6s7tyu0w',
+    },
+    idempotencyKey: {
+      type: 'string',
+      description: 'Client-generated key to safely retry requests without double-charging. Must be unique per request.',
+      maxLength: 255,
+      writeOnly: true,
+    },
+    chargeId: {
+      type: 'string',
+      description: '⚠️ Deprecated. Legacy charge reference. Use `id` instead.',
+      deprecated: true,
+      readOnly: true,
+      nullable: true,
+    },
+
+    /* ── Amounts ──────────────────────────────────────────────────────────── */
+    amount: {
+      type: 'integer',
+      description: 'Charge amount in the currency\'s smallest unit (e.g. cents for USD). Must be positive.',
+      minimum: 1,
+      maximum: 99999999,
+      example: 2500,
+    },
+    currency: {
+      type: 'string',
+      description: 'Three-letter ISO 4217 currency code.',
+      minLength: 3,
+      maxLength: 3,
+      pattern: '^[A-Z]{3}$',
+      enum: ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD', 'SGD'],
+      example: 'USD',
+    },
+    amountCaptured: {
+      type: 'integer',
+      description: 'Amount actually captured. May differ from `amount` in partial captures.',
+      minimum: 0,
+      readOnly: true,
+    },
+    amountRefunded: {
+      type: 'integer',
+      description: 'Total amount refunded so far.',
+      minimum: 0,
+      default: 0,
+      readOnly: true,
+    },
+    applicationFeeAmount: {
+      type: 'integer',
+      description: 'Platform fee retained from this transaction.',
+      minimum: 0,
+      nullable: true,
+    },
+    exchangeRate: {
+      type: 'number',
+      description: 'FX rate applied when currency conversion occurred between presentment and settlement currency.',
+      minimum: 0,
+      exclusiveMinimum: 0,
+      multipleOf: 0.000001,
+      nullable: true,
+      readOnly: true,
+    },
+
+    /* ── Status & flags ───────────────────────────────────────────────────── */
+    status: {
+      type: 'string',
+      description: 'Current lifecycle state of the transaction.',
+      enum: ['pending', 'processing', 'authorized', 'succeeded', 'failed', 'cancelled', 'refunded', 'disputed', 'partially_refunded'],
+    },
+    captured: {
+      type: 'boolean',
+      description: 'Whether the authorisation has been captured. Uncaptured transactions expire after 7 days.',
+      default: true,
+    },
+    livemode: {
+      type: 'boolean',
+      description: '`false` for transactions made in test mode.',
+      readOnly: true,
+    },
+    disputed: {
+      type: 'boolean',
+      description: 'Whether a chargeback dispute has been opened.',
+      default: false,
+      readOnly: true,
+    },
+
+    /* ── Timestamps ───────────────────────────────────────────────────────── */
+    createdAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'UTC timestamp when the transaction was created.',
+      readOnly: true,
+    },
+    updatedAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'UTC timestamp of the most recent status update.',
+      readOnly: true,
+    },
+    capturedAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'UTC timestamp when the authorisation was captured.',
+      nullable: true,
+      readOnly: true,
+    },
+    expiresAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'When the uncaptured authorisation expires.',
+      nullable: true,
+      readOnly: true,
+    },
+
+    /* ── Payer (nested object with $ref) ──────────────────────────────────── */
+    payer: {
+      type: 'object',
+      description: 'Customer who initiated the payment.',
+      required: ['name', 'email'],
+      properties: {
+        id:    { type: 'string', format: 'uuid', nullable: true, description: 'Your internal customer ID.' },
+        name:  { type: 'string', maxLength: 256, description: 'Full name as it appears on the payment method.' },
+        email: { type: 'string', format: 'email', description: 'Customer email address for receipts.' },
+        phone: { type: 'string', pattern: '^\\+[1-9]\\d{1,14}$', nullable: true, description: 'E.164-formatted phone number.' },
+        ipAddress: { type: 'string', format: 'ipv4', nullable: true, description: 'IPv4 address at time of payment.', readOnly: true },
+        userAgent:  { type: 'string', nullable: true, description: 'Browser user-agent string.', readOnly: true },
+        billingAddress:  { $ref: '#/definitions/Address' } as JSONSchema,
+        shippingAddress: { $ref: '#/definitions/Address', nullable: true } as JSONSchema,
+      },
+    },
+
+    /* ── Payment method (oneOf $refs) ─────────────────────────────────────── */
+    paymentMethod: {
+      oneOf: [
+        { $ref: '#/definitions/CardPaymentMethod' },
+        { $ref: '#/definitions/BankTransferPaymentMethod' },
+        { $ref: '#/definitions/WalletPaymentMethod' },
+      ],
+      description: 'The payment instrument used. Discriminated by the `type` field.',
+    },
+
+    /* ── Line items (array of objects) ───────────────────────────────────── */
+    lineItems: {
+      type: 'array',
+      description: 'Individual products or services being charged. Required if `description` is absent.',
+      minItems: 0,
+      maxItems: 100,
+      uniqueItems: false,
+      items: {
+        type: 'object',
+        required: ['name', 'amount', 'quantity'],
+        properties: {
+          id:             { type: 'string', format: 'uuid', readOnly: true },
+          name:           { type: 'string', maxLength: 256, description: 'Product or service name.' },
+          description:    { type: 'string', maxLength: 1000, nullable: true },
+          amount:         { type: 'integer', minimum: 0, description: 'Unit price in the transaction\'s currency smallest unit.' },
+          quantity:       { type: 'integer', minimum: 1, maximum: 9999, default: 1 },
+          taxAmount:      { type: 'integer', minimum: 0, default: 0, description: 'Tax applied to this line item.' },
+          discountAmount: { type: 'integer', minimum: 0, default: 0, description: 'Discount applied to this line item.' },
+          imageUrl:       { type: 'string', format: 'uri', nullable: true, description: 'Product image URL shown on hosted checkout.' },
+          category:       { type: 'string', enum: ['physical', 'digital', 'service', 'subscription', 'donation', 'tax', 'shipping'] },
+          sku:            { type: 'string', maxLength: 128, nullable: true, description: 'Stock-keeping unit.' },
+        },
+      },
+    },
+
+    /* ── Tags (array of primitives, uniqueItems) ─────────────────────────── */
+    tags: {
+      type: 'array',
+      description: 'Custom labels for filtering and analytics. Values must be unique.',
+      maxItems: 20,
+      uniqueItems: true,
+      items: { type: 'string', maxLength: 50 },
+      example: ['subscription', 'annual', 'promo-2024'],
+    },
+
+    /* ── Metadata (additionalProperties / free-form map) ─────────────────── */
+    metadata: {
+      type: 'object',
+      description: 'Arbitrary key-value pairs for attaching structured data. Keys and values are strings; max 50 keys.',
+      additionalProperties: { type: 'string', maxLength: 500 } as JSONSchema,
+      example: { orderId: 'ord_a8f3k', userId: 'usr_9x2p', campaignId: 'camp_q1' },
+    },
+
+    /* ── Risk / fraud ─────────────────────────────────────────────────────── */
+    riskScore: {
+      type: 'integer',
+      description: 'ML-computed fraud risk score. 0 = no risk, 100 = very high risk.',
+      minimum: 0,
+      maximum: 100,
+      readOnly: true,
+      nullable: true,
+    },
+    riskLevel: {
+      type: 'string',
+      enum: ['normal', 'elevated', 'highest'],
+      description: 'Human-readable risk level derived from `riskScore`.',
+      readOnly: true,
+      nullable: true,
+    },
+    riskOutcome: {
+      type: 'string',
+      enum: ['approved', 'manual_review', 'blocked'],
+      description: 'Final decision made by the risk engine.',
+      readOnly: true,
+      nullable: true,
+    },
+
+    /* ── Statement & receipt ──────────────────────────────────────────────── */
+    description: {
+      type: 'string',
+      description: 'An arbitrary string description attached to the transaction, visible in the dashboard.',
+      maxLength: 1000,
+      nullable: true,
+    },
+    statementDescriptor: {
+      type: 'string',
+      description: 'Text shown on customer\'s bank or card statement. Max 22 characters, uppercase letters, digits, spaces, and * only.',
+      minLength: 5,
+      maxLength: 22,
+      pattern: '^[A-Z0-9 *]{5,22}$',
+      nullable: true,
+    },
+    receiptEmail: {
+      type: 'string',
+      format: 'email',
+      description: 'Email address to send the digital receipt to. Defaults to `payer.email`.',
+      nullable: true,
+    },
+    receiptUrl: {
+      type: 'string',
+      format: 'uri',
+      description: 'Hosted receipt page URL, generated after successful capture.',
+      readOnly: true,
+      nullable: true,
+    },
+
+    /* ── Refunds (array of objects) ───────────────────────────────────────── */
+    refunds: {
+      type: 'array',
+      description: 'All refunds issued against this transaction, in reverse chronological order.',
+      readOnly: true,
+      items: {
+        type: 'object',
+        properties: {
+          id:        { type: 'string', format: 'uuid', readOnly: true },
+          amount:    { type: 'integer', minimum: 1, description: 'Refund amount in smallest currency unit.' },
+          status:    { type: 'string', enum: ['pending', 'succeeded', 'failed', 'cancelled'] },
+          reason:    { type: 'string', enum: ['duplicate', 'fraudulent', 'customer_request', 'other'], nullable: true },
+          note:      { type: 'string', maxLength: 500, nullable: true, description: 'Internal note visible in the dashboard only.' },
+          createdAt: { type: 'string', format: 'date-time', readOnly: true },
+        },
+      },
+    },
+
+    /* ── 3DS / network auth codes ─────────────────────────────────────────── */
+    networkTransactionId: {
+      type: 'string',
+      description: 'Card network\'s identifier for the authorisation — used for subsequent MIT charges.',
+      readOnly: true,
+      nullable: true,
+    },
+    authorizationCode: {
+      type: 'string',
+      description: 'Approval code returned by the card issuer.',
+      readOnly: true,
+      nullable: true,
+      pattern: '^[A-Z0-9]{6}$',
+    },
+  },
+};
+
 /* =============================================================================
    Stories
    ============================================================================= */
+
+/** Payment Transaction — the "kitchen sink" story. */
+export const PaymentTransaction: Story = {
+  name: 'Kitchen Sink — Payment Transaction',
+  args: {
+    schema: paymentTransactionSchema,
+    definitions: paymentTransactionDefinitions,
+    schemaName: 'PaymentTransaction',
+    contentType: 'application/json',
+    defaultTab: 'schema',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+A comprehensive **PaymentTransaction** schema designed to exercise every feature of the visualiser:
+
+| Feature | Fields |
+|---------|--------|
+| **All primitive types** | \`string\`, \`integer\`, \`number\`, \`boolean\` |
+| **String formats** | \`uuid\`, \`date-time\`, \`email\`, \`uri\`, \`ipv4\`, \`byte\` |
+| **String constraints** | \`minLength\`, \`maxLength\`, \`pattern\` |
+| **Number constraints** | \`minimum\`, \`maximum\`, \`exclusiveMinimum\`, \`multipleOf\` |
+| **Array constraints** | \`minItems\`, \`maxItems\`, \`uniqueItems\` |
+| **Array of objects** | \`lineItems[]\`, \`refunds[]\` |
+| **Array of primitives** | \`tags[]\` |
+| **Enum** | \`currency\`, \`status\`, \`riskLevel\`, \`riskOutcome\` |
+| **\`oneOf\` union** | \`paymentMethod\` — Card / Bank / Wallet |
+| **Nested object** | \`payer\` with \`billingAddress\` / \`shippingAddress\` |
+| **\`\$ref\` resolution** | \`Address\`, \`ThreeDSecure\`, \`CardPaymentMethod\`, … |
+| **\`nullable\`** | Many optional fields |
+| **\`readOnly\`** | IDs, timestamps, computed fields |
+| **\`writeOnly\`** | \`idempotencyKey\` |
+| **\`deprecated\`** | \`chargeId\` |
+| **\`default\`** | \`captured\`, \`amountRefunded\`, \`disputed\` |
+| **\`example\`** | \`amount\`, \`currency\`, \`id\`, \`tags\` |
+| **\`additionalProperties\`** | \`metadata\` free-form map |
+        `,
+      },
+    },
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ height: '760px', padding: '24px' }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
 
 export const ConsumerLoan: Story = {
   name: 'Consumer Loan Request',

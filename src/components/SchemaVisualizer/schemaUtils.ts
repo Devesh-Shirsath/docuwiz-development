@@ -31,9 +31,13 @@ export function resolveSchema(schema: JSONSchema, defs: SchemaDefinitions): JSON
    --------------------------------------------------------------------------- */
 export function getEffectiveType(schema: JSONSchema): string {
   if (schema.enum) return 'enum';
+  // Prefer explicit type first
   const raw = Array.isArray(schema.type) ? schema.type.find(t => t !== 'null') ?? schema.type[0] : schema.type;
   if (raw) return raw;
-  if (schema.properties || schema.allOf || schema.anyOf || schema.oneOf) return 'object';
+  // Composite keywords — preserve them so the UI can display them properly
+  if (schema.oneOf) return 'oneOf';
+  if (schema.anyOf) return 'anyOf';
+  if (schema.properties || schema.allOf) return 'object';
   if (schema.items) return 'array';
   return 'string';
 }
