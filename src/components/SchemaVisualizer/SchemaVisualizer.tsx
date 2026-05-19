@@ -28,6 +28,7 @@ export interface SchemaVisualizerProps {
   /**
    * The root JSON Schema object to visualise.
    * Accepts JSON Schema draft-07 or OpenAPI 3.x schema objects.
+   * Fully reactive — changing this prop resets the navigator to the root.
    */
   schema: JSONSchema;
   /**
@@ -95,6 +96,8 @@ interface SchemaTreeProps {
   /** Normalized breadcrumb path ([] suffixes stripped). */
   breadcrumbKeys: string[];
   collapsedPaths: Set<string>;
+  /** Ref map populated with each row's DOM element for programmatic scrolling. */
+  rowRefsMap: React.MutableRefObject<Record<string, HTMLElement | null>>;
   onToggleCollapse: (pathKey: string) => void;
   onNodeClick: (node: TreeNode) => void;
 }
@@ -104,6 +107,7 @@ function SchemaTree({
   contentType,
   breadcrumbKeys,
   collapsedPaths,
+  rowRefsMap,
   onToggleCollapse,
   onNodeClick,
 }: SchemaTreeProps) {
@@ -125,15 +129,10 @@ function SchemaTree({
 
   return (
     <div className={styles.tree}>
-      {/* Header: content type */}
       <div className={styles.treeHeader}>
-        <span className={styles.treeHeaderIcon}>
-          <TreeStructure size={14} />
-        </span>
+        <span className={styles.treeHeaderIcon}><TreeStructure size={14} /></span>
         <span className={styles.contentTypeLabel}>{contentType}</span>
-        <span className={styles.treeHeaderCaret}>
-          <CaretDown size={12} />
-        </span>
+        <span className={styles.treeHeaderCaret}><CaretDown size={12} /></span>
       </div>
 
       <div className={styles.treeList} role="tree" aria-label="Schema tree">
@@ -152,6 +151,7 @@ function SchemaTree({
               type="button"
               role="treeitem"
               aria-expanded={node.hasChildren ? !isCollapsed : undefined}
+              ref={el => { rowRefsMap.current[pathKey] = el; }}
               className={[
                 styles.treeRow,
                 active ? styles.treeRowActive : '',
@@ -160,24 +160,16 @@ function SchemaTree({
               style={{ paddingLeft: indent }}
               onClick={() => onNodeClick(node)}
             >
-              {/* Expand / collapse caret — separate click target */}
               {node.hasChildren && (
                 <span
-                  className={[
-                    styles.treeCaret,
-                    !isCollapsed ? styles.treeCaretExpanded : '',
-                  ].join(' ')}
+                  className={[styles.treeCaret, !isCollapsed ? styles.treeCaretExpanded : ''].join(' ')}
                   style={{ left: indent - 14 }}
                   aria-hidden
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleCollapse(pathKey);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); onToggleCollapse(pathKey); }}
                 >
                   <CaretRight size={10} weight="bold" />
                 </span>
               )}
-
               <span className={styles.treeIcon}>
                 <DataTypeIcon type={node.type} size={14} />
               </span>
@@ -207,7 +199,6 @@ function FieldRow({ fieldName, schema, defs, required, onViewProperties }: Field
   const chips = getConstraintChips(resolved);
   const navigable = getNavigableSchema(resolved, defs);
 
-  // Human-readable type label
   const typeLabel = (() => {
     if (type === 'array') {
       const items = Array.isArray(resolved.items) ? resolved.items[0] : resolved.items;
@@ -270,32 +261,54 @@ export function SchemaVisualizer({
   defaultTab = 'schema',
   className,
 }: SchemaVisualizerProps) {
-  /* ── State ──────────────────────────────────────────────────────────────── */
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'schema' | 'example'>(defaultTab);
+  /* ── Core state ─────────────────────────────────────────────────────────── */
+  const [sidebarOpen, setSidebarOpen]   = useState(true);
+  const [activeTab, setActiveTab]       = useState<'schema' | 'example'>(defaultTab);
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
 
-  const rootResolved = useMemo(() => resolveSchema(schema, definitions), [schema, definitions]);
+  const rootResolved = useMemo(
+    () => resolveSchema(schema, definitions),
+    [schema, definitions],
+  );
 
-  const [breadcrumb, setBreadcrumb] = useState<BreadcrumbEntry[]>([
-    {
+  const makeRootBreadcrumb = (): BreadcrumbEntry[] => [{
+    label: schemaName,
+    schema: rootResolved,
+    requiredFields: new Set(rootResolved.required ?? []),
+  }];
+
+  const [breadcrumb, setBreadcrumb] = useState<BreadcrumbEntry[]>(makeRootBreadcrumb);
+
+  /* ── Right-panel scroll / highlight ────────────────────────────────────── */
+  const [scrollTarget,    setScrollTarget]    = useState<string | null>(null);
+  const [highlightedField, setHighlightedField] = useState<string | null>(null);
+  const fieldRefsMap    = useRef<Record<string, HTMLElement | null>>({});
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+
+  /* ── Left-panel (tree) scroll ───────────────────────────────────────────── */
+  /** Path key of the tree row to scroll into view after navigation. */
+  const [treeScrollTarget, setTreeScrollTarget] = useState<string | null>(null);
+  const treeRowRefsMap = useRef<Record<string, HTMLElement | null>>({});
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     REACTIVE: reset the whole navigator when schema/definitions/schemaName
+     props change (e.g. Storybook controls, runtime schema swap).
+     ───────────────────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    setBreadcrumb([{
       label: schemaName,
       schema: rootResolved,
       requiredFields: new Set(rootResolved.required ?? []),
-    },
-  ]);
+    }]);
+    setScrollTarget(null);
+    setHighlightedField(null);
+    setTreeScrollTarget(null);
+    setCollapsedPaths(new Set());
+    contentScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schema, definitions, schemaName]); // intentionally NOT rootResolved to avoid double-fire
 
-  /* ── Scroll / highlight state ───────────────────────────────────────────── */
-  /** Field key to scroll into view after the next render. */
-  const [scrollTarget, setScrollTarget] = useState<string | null>(null);
-  /** Field key currently flashing with the highlight animation. */
-  const [highlightedField, setHighlightedField] = useState<string | null>(null);
-  /** Map of field key → DOM element for the field rows at the current level. */
-  const fieldRefsMap = useRef<Record<string, HTMLElement | null>>({});
-  /** Ref to the scrollable schema content div (for scroll-to-top). */
-  const contentScrollRef = useRef<HTMLDivElement>(null);
-
-  /* ── Scroll effect — runs after render when scrollTarget is set ─────────── */
+  /* ── Right-panel scroll effect ──────────────────────────────────────────── */
   useEffect(() => {
     if (!scrollTarget) return;
     const el = fieldRefsMap.current[scrollTarget];
@@ -304,21 +317,30 @@ export function SchemaVisualizer({
       setHighlightedField(scrollTarget);
       setScrollTarget(null);
     }
-  }, [scrollTarget, breadcrumb]); // re-check after breadcrumb change (new fields mounted)
+  }, [scrollTarget, breadcrumb]);
 
-  /* ── Highlight timeout — clear after animation completes ────────────────── */
   useEffect(() => {
     if (!highlightedField) return;
     const t = setTimeout(() => setHighlightedField(null), 2200);
     return () => clearTimeout(t);
   }, [highlightedField]);
 
-  /* ── Derived data ───────────────────────────────────────────────────────── */
-  const current = breadcrumb[breadcrumb.length - 1];
-  const currentSchema = current.schema;
+  /* ── Tree scroll effect ─────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (!treeScrollTarget) return;
+    const el = treeRowRefsMap.current[treeScrollTarget];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTreeScrollTarget(null);
+    }
+  }, [treeScrollTarget, breadcrumb]);
+
+  /* ── Derived ────────────────────────────────────────────────────────────── */
+  const current        = breadcrumb[breadcrumb.length - 1];
+  const currentSchema  = current.schema;
   const currentRequired = current.requiredFields;
-  const currentType = getEffectiveType(currentSchema);
-  const properties = currentSchema.properties ?? {};
+  const currentType    = getEffectiveType(currentSchema);
+  const properties     = currentSchema.properties ?? {};
 
   const treeNodes = useMemo<TreeNode[]>(() => {
     const out: TreeNode[] = [];
@@ -326,65 +348,78 @@ export function SchemaVisualizer({
     return out;
   }, [rootResolved, definitions, schemaName]);
 
-  /** Normalized breadcrumb path with [] suffixes stripped — used for tree highlight. */
   const breadcrumbKeys = useMemo(
     () => breadcrumb.map(e => e.label.replace(/\[\]$/, '')),
-    [breadcrumb]
+    [breadcrumb],
   );
 
   const exampleJson = useMemo(
     () => JSON.stringify(generateExample(currentSchema, definitions), null, 2),
-    [currentSchema, definitions]
+    [currentSchema, definitions],
   );
 
   /* ── Handlers ───────────────────────────────────────────────────────────── */
   const handleNavigateTo = (index: number) => {
     setBreadcrumb(prev => prev.slice(0, index + 1));
+    // Scroll tree to the breadcrumb level we're going back to
+    const targetPath = breadcrumb.slice(0, index + 1).map(e => e.label.replace(/\[\]$/, '')).join('\0');
+    setTreeScrollTarget(targetPath);
   };
 
-  /** View Properties → button: navigate INTO the field. */
+  /**
+   * "View Properties →" button: navigate INTO the field.
+   * Also scrolls the tree to the matching node.
+   */
   const handleViewProperties = (fieldName: string, fieldSchema: JSONSchema) => {
-    const resolved = resolveSchema(fieldSchema, definitions);
-    const navTarget = getNavigableSchema(resolved, definitions);
+    const resolved   = resolveSchema(fieldSchema, definitions);
+    const navTarget  = getNavigableSchema(resolved, definitions);
     if (!navTarget) return;
 
-    const type = getEffectiveType(resolved);
+    const type  = getEffectiveType(resolved);
     const label = type === 'array' ? `${fieldName}[]` : fieldName;
 
-    setBreadcrumb(prev => [
-      ...prev,
-      {
-        label,
-        schema: navTarget,
-        requiredFields: new Set(navTarget.required ?? []),
-        isArrayItems: type === 'array',
-      },
-    ]);
+    const newEntry: BreadcrumbEntry = {
+      label,
+      schema: navTarget,
+      requiredFields: new Set(navTarget.required ?? []),
+      isArrayItems: type === 'array',
+    };
+
+    setBreadcrumb(prev => [...prev, newEntry]);
+
+    // Scroll the tree to the node we just navigated into
+    const newTreePathKey = [...breadcrumbKeys, fieldName].join('\0');
+    setTreeScrollTarget(newTreePathKey);
+
+    // Also auto-expand the path in the tree so the node is visible
+    setCollapsedPaths(prev => {
+      const next = new Set(prev);
+      // Ensure every ancestor node along this path is expanded
+      for (let d = 1; d <= breadcrumbKeys.length; d++) {
+        next.delete(breadcrumbKeys.slice(0, d).join('\0'));
+      }
+      next.delete(newTreePathKey);
+      return next;
+    });
   };
 
   /**
    * Tree click: navigate breadcrumb to the PARENT of the clicked node,
    * then scroll the right panel to the clicked field.
-   * This keeps the flat view stable — clicking the tree never opens an object
-   * directly; it scrolls to it instead.
    */
   const handleTreeNodeClick = (node: TreeNode) => {
     const fieldKey = node.path[node.path.length - 1];
 
-    // Clicking the root node → reset to root, scroll content to top
+    // Root node → reset to root
     if (node.path.length === 1) {
-      setBreadcrumb([{
-        label: schemaName,
-        schema: rootResolved,
-        requiredFields: new Set(rootResolved.required ?? []),
-      }]);
+      setBreadcrumb(makeRootBreadcrumb());
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    // Walk the parent path to rebuild the breadcrumb up to (but not including) this node
-    const parentPath = node.path.slice(0, -1); // e.g. ['Root', 'applicantAddress']
-    let walkSchema = rootResolved;
+    // Navigate breadcrumb to this node's parent, then scroll to the field
+    const parentPath = node.path.slice(0, -1);
+    let walkSchema   = rootResolved;
     const newBreadcrumb: BreadcrumbEntry[] = [{
       label: schemaName,
       schema: rootResolved,
@@ -392,12 +427,12 @@ export function SchemaVisualizer({
     }];
 
     for (let i = 1; i < parentPath.length; i++) {
-      const key = parentPath[i];
+      const key  = parentPath[i];
       const prop = walkSchema.properties?.[key];
       if (!prop) break;
 
       const resolved = resolveSchema(prop, definitions);
-      const nav = getNavigableSchema(resolved, definitions);
+      const nav      = getNavigableSchema(resolved, definitions);
       if (!nav) break;
 
       const type = getEffectiveType(resolved);
@@ -410,7 +445,6 @@ export function SchemaVisualizer({
       walkSchema = nav;
     }
 
-    // Navigate breadcrumb to parent level, then scroll to the clicked field
     setBreadcrumb(newBreadcrumb);
     setScrollTarget(fieldKey);
   };
@@ -435,6 +469,7 @@ export function SchemaVisualizer({
           contentType={contentType}
           breadcrumbKeys={breadcrumbKeys}
           collapsedPaths={collapsedPaths}
+          rowRefsMap={treeRowRefsMap}
           onToggleCollapse={handleToggleCollapse}
           onNodeClick={handleTreeNodeClick}
         />

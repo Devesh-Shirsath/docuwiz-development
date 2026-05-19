@@ -41,6 +41,17 @@ two-panel explorer.
     },
   },
   argTypes: {
+    schema: {
+      control: 'object',
+      description: 'JSON Schema object. Edit this directly in the Controls panel — the visualiser updates live.',
+    },
+    definitions: {
+      control: 'object',
+      description: 'Named schema definitions for `$ref` resolution.',
+    },
+    schemaName: {
+      control: 'text',
+    },
     contentType: {
       control: 'select',
       options: ['application/json', 'application/xml', 'multipart/form-data', 'text/plain'],
