@@ -313,7 +313,7 @@ export function SchemaVisualizer({
     if (!scrollTarget) return;
     const el = fieldRefsMap.current[scrollTarget];
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedField(scrollTarget);
       setScrollTarget(null);
     }
@@ -330,7 +330,7 @@ export function SchemaVisualizer({
     if (!treeScrollTarget) return;
     const el = treeRowRefsMap.current[treeScrollTarget];
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setTreeScrollTarget(null);
     }
   }, [treeScrollTarget, breadcrumb]);
