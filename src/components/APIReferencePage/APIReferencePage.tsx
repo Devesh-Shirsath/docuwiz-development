@@ -479,7 +479,7 @@ export function APIReferencePage({
       {/* ════════════════ MAIN CARD ════════════════ */}
       <div className={styles.mainCard}>
 
-        {/* ── Card header (never scrolls) ── */}
+        {/* ── Card header (scrolls with the page — spans full card width) ── */}
         <header className={styles.cardHeader}>
           {/* Breadcrumb */}
           {breadcrumb && breadcrumb.length > 0 && (
@@ -565,7 +565,7 @@ export function APIReferencePage({
           </div>
         </header>
 
-        {/* ── Two-column body ── */}
+        {/* ── Two-column body (grid — code col sticks once header scrolls past) ── */}
         <div className={styles.cardBody}>
 
           {/* Left: scrollable content */}

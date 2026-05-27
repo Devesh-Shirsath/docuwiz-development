@@ -4,8 +4,10 @@
 
 /* ── Page shell ──────────────────────────────────────────────────────────── */
 .page {
+  --nav-h: 56px;           /* top nav height — used for sticky calc below */
+
   display: flex;
-  flex-direction: column;       /* nav on top, body below */
+  flex-direction: column;
   height: 100vh;
   overflow: hidden;
   background: var(--color-surface-l2);
@@ -19,10 +21,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  height: var(--nav-h);
   padding: 0 16px;
-  background: var(--color-surface-ground);
-  border-bottom: 1px solid var(--color-stroke-gray-secondary);
+  /* Same background as the sidebar — no border */
+  background: var(--color-surface-l2);
   z-index: 10;
 }
 
@@ -65,7 +67,7 @@
 }
 
 .navTab:hover:not(.navTabActive) {
-  background: var(--color-surface-l2);
+  background: color-mix(in srgb, var(--color-surface-l3) 60%, transparent);
 }
 
 .navTabActive {
@@ -99,7 +101,7 @@
 }
 
 .navLoginBtn:hover {
-  background: var(--color-surface-l2);
+  background: color-mix(in srgb, var(--color-surface-l3) 60%, transparent);
 }
 
 .navGetStartedBtn {
@@ -142,21 +144,20 @@
   background: var(--color-surface-l2);
 }
 
-/* ── Main card (white pill with rounded left corners) ────────────────────── */
+/* ── Main card ───────────────────────────────────────────────────────────── */
+/* This is the single scroll container for the content + sticky code col.    */
 .mainCard {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  overflow-y: auto;           /* ← the one scroll container */
+  overflow-x: hidden;
   background: var(--color-surface-ground);
   border-radius: 16px 0 0 16px;
 }
 
-/* ── Card header (fixed, never scrolls) ──────────────────────────────────── */
+/* ── Card header (scrolls with the page) ─────────────────────────────────── */
+/* Sits above the two-col grid so it spans the full card width.               */
 .cardHeader {
-  flex-shrink: 0;
   padding: 32px 48px 0;
   background: var(--color-surface-ground);
   border-bottom: 1px solid var(--color-stroke-gray-secondary);
@@ -207,15 +208,15 @@
 .pathBar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;  /* path left, actions right */
   padding: 10px 0 14px;
+  gap: 16px;
 }
 
 .pathLeft {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1;
   min-width: 0;
 }
 
@@ -294,29 +295,35 @@
   background: var(--color-surface-l2);
 }
 
-/* ── Card body (two-column) ──────────────────────────────────────────────── */
+/* ── Two-column body (grid, not flex) ────────────────────────────────────── */
+/* align-items: start is critical — without it items stretch to fill the      */
+/* grid area and sticky won't work on the code column.                        */
 .cardBody {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  align-items: start;
+  /* Must be tall enough that the code col has room to scroll/stick.          */
+  min-height: calc(100vh - var(--nav-h));
 }
 
-/* ── Left: scrollable content ────────────────────────────────────────────── */
+/* ── Left: scrollable content (flows naturally inside the grid) ─────────── */
 .contentCol {
-  flex: 1;
-  min-width: 0;
-  overflow-y: auto;
   padding: 28px 48px 80px;
+  min-width: 0;
 }
 
-/* ── Right: code panel (dark, scrolls independently) ────────────────────── */
+/* ── Right: sticky code panel ────────────────────────────────────────────── */
+/* Sticks to the top of .mainCard's scroll container once the header         */
+/* scrolls out of view.                                                       */
 .codeCol {
-  width: 440px;
-  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - var(--nav-h));
   overflow-y: auto;
   background: #13151f;
   border-left: 1px solid #2a2d3e;
+  padding-top: 16px;
+  padding-right: 16px;
 }
 
 /* ── Host section ────────────────────────────────────────────────────────── */
@@ -353,6 +360,9 @@
 .hostSectionSub {
   font-size: var(--font-size-2);
   color: var(--color-font-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hostDropdownWrap {
@@ -514,7 +524,6 @@
   border: 1px solid var(--color-stroke-green);
 }
 
-/* Using attribute selectors to avoid CSS Modules hashed name issues */
 .statusCode[data-error="true"] {
   background: var(--color-surface-red);
   color: #c53030;
@@ -543,23 +552,24 @@
   .mainCard { border-radius: 0; }
 }
 
-@media (max-width: 768px) {
-  .navTabs { display: none; }
-}
-
 @media (max-width: 1024px) {
-  .codeCol { width: 380px; }
+  .cardBody { grid-template-columns: 1fr 380px; }
   .contentCol { padding: 24px 32px 80px; }
   .cardHeader { padding: 24px 32px 0; }
 }
 
 @media (max-width: 800px) {
-  .cardBody { flex-direction: column; }
-  .contentCol { overflow-y: visible; }
+  .cardBody {
+    grid-template-columns: 1fr;
+  }
   .codeCol {
-    width: 100%;
+    position: static;
     height: 480px;
     border-left: none;
     border-top: 1px solid #2a2d3e;
   }
+}
+
+@media (max-width: 768px) {
+  .navTabs { display: none; }
 }
