@@ -7,4 +7,5 @@ export type {
   NavItem,
   NavGroupDef,
   NavSectionDef,
+  TopNavItem,
 } from './APIReferencePage';

@@ -2,6 +2,16 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { APIReferencePage } from './APIReferencePage';
 import type { ResponseEntry } from '../CodeBlock/ResponseBlock';
 
+/* Figma asset — ACME BANK hexagon logo (cached 7 days) */
+const ACME_LOGO = 'https://www.figma.com/api/mcp/asset/8dab8b01-5247-44be-a8f5-c015ba6f7aea';
+
+const TOP_NAV_ITEMS = [
+  { label: 'Guides' },
+  { label: 'API Reference', active: true },
+  { label: 'Recipes' },
+  { label: 'Packages' },
+];
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  Sample data                                                                  */
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -285,6 +295,9 @@ type Story = StoryObj<typeof APIReferencePage>;
 /** Default — full featured Fetch Bill endpoint. */
 export const Default: Story = {
   args: {
+    logoSrc: ACME_LOGO,
+    logoAlt: 'ACME Bank',
+    topNavItems: TOP_NAV_ITEMS,
     method: 'POST',
     path: '/v1/bills/fetch',
     title: 'Fetch Bill',
@@ -374,6 +387,9 @@ export const NoSidebar: Story = {
 /** Schema-only — no request body, query params only. */
 export const GetEndpoint: Story = {
   args: {
+    logoSrc: ACME_LOGO,
+    logoAlt: 'ACME Bank',
+    topNavItems: TOP_NAV_ITEMS,
     method: 'GET',
     path: '/v1/bills/{billId}',
     title: 'Get Bill',

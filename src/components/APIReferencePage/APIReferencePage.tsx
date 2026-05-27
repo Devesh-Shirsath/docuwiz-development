@@ -32,6 +32,85 @@ import { Input } from '../Input/Input';
 import styles from './APIReferencePage.module.css';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
+/*  TopNav sub-component                                                         */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+export interface TopNavItem {
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+  href?: string;
+}
+
+interface TopNavProps {
+  logoSrc?: string;
+  logoAlt?: string;
+  items?: TopNavItem[];
+  onLogin?: () => void;
+  onGetStarted?: () => void;
+  loginLabel?: string;
+  getStartedLabel?: string;
+}
+
+function TopNav({
+  logoSrc,
+  logoAlt = 'Logo',
+  items = [],
+  onLogin,
+  onGetStarted,
+  loginLabel = 'Login',
+  getStartedLabel = 'Get Started',
+}: TopNavProps) {
+  return (
+    <nav className={styles.topNav} aria-label="Site navigation">
+      {/* Logo */}
+      <div className={styles.navLogo}>
+        {logoSrc
+          ? <img src={logoSrc} alt={logoAlt} className={styles.navLogoImg} />
+          : <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-font-primary)' }}>⬡</span>
+        }
+      </div>
+
+      {/* Center tabs */}
+      <div className={styles.navTabs}>
+        {items.map((item, i) =>
+          item.href ? (
+            <a
+              key={i}
+              href={item.href}
+              className={[styles.navTab, item.active ? styles.navTabActive : ''].filter(Boolean).join(' ')}
+              aria-current={item.active ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ) : (
+            <button
+              key={i}
+              type="button"
+              className={[styles.navTab, item.active ? styles.navTabActive : ''].filter(Boolean).join(' ')}
+              onClick={item.onClick}
+              aria-current={item.active ? 'page' : undefined}
+            >
+              {item.label}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* Right actions */}
+      <div className={styles.navActions}>
+        <button type="button" className={styles.navLoginBtn} onClick={onLogin}>
+          {loginLabel}
+        </button>
+        <button type="button" className={styles.navGetStartedBtn} onClick={onGetStarted}>
+          {getStartedLabel}
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 /*  Data types                                                                   */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
@@ -255,8 +334,19 @@ export interface APIReferencePageProps {
   /** Called when "Download" is pressed. */
   onDownload?: () => void;
 
-  /* ── Navigation ─── */
+  /* ── Sidebar navigation ─── */
   navSections?: NavSectionDef[];
+
+  /* ── Top navigation bar ─── */
+  /** Source URL of the logo image shown in the top nav. */
+  logoSrc?: string;
+  logoAlt?: string;
+  /** Top-level navigation items (Guides, API Reference, Recipes, Packages, etc.) */
+  topNavItems?: TopNavItem[];
+  onLogin?: () => void;
+  onGetStarted?: () => void;
+  loginLabel?: string;
+  getStartedLabel?: string;
 
   className?: string;
 }
@@ -298,6 +388,13 @@ export function APIReferencePage({
   onOpenInClaude,
   onDownload,
   navSections = [],
+  logoSrc,
+  logoAlt,
+  topNavItems,
+  onLogin,
+  onGetStarted,
+  loginLabel,
+  getStartedLabel,
   className,
 }: APIReferencePageProps) {
   /* Mode: schema (read-only) or tryout (editable + runnable) */
@@ -319,6 +416,20 @@ export function APIReferencePage({
 
   return (
     <div className={[styles.page, className].filter(Boolean).join(' ')}>
+
+      {/* ════════════════ TOP NAV ════════════════ */}
+      <TopNav
+        logoSrc={logoSrc}
+        logoAlt={logoAlt}
+        items={topNavItems}
+        onLogin={onLogin}
+        onGetStarted={onGetStarted}
+        loginLabel={loginLabel}
+        getStartedLabel={getStartedLabel}
+      />
+
+      {/* ════════════════ PAGE BODY ════════════════ */}
+      <div className={styles.pageBody}>
 
       {/* ════════════════ SIDEBAR ════════════════ */}
       {navSections.length > 0 && (
@@ -569,6 +680,8 @@ export function APIReferencePage({
           </aside>
         </div>
       </div>
+
+      </div>{/* end .pageBody */}
     </div>
   );
 }

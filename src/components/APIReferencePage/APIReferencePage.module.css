@@ -5,6 +5,7 @@
 /* ── Page shell ──────────────────────────────────────────────────────────── */
 .page {
   display: flex;
+  flex-direction: column;       /* nav on top, body below */
   height: 100vh;
   overflow: hidden;
   background: var(--color-surface-l2);
@@ -12,11 +13,131 @@
   color: var(--color-font-primary);
 }
 
+/* ── Top navigation bar ──────────────────────────────────────────────────── */
+.topNav {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--color-surface-ground);
+  border-bottom: 1px solid var(--color-stroke-gray-secondary);
+  z-index: 10;
+}
+
+.navLogo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 42px;
+}
+
+.navLogoImg {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.navTabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 10px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-font-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+  text-decoration: none;
+}
+
+.navTab:hover:not(.navTabActive) {
+  background: var(--color-surface-l2);
+}
+
+.navTabActive {
+  color: var(--color-brand-accent);
+  background: color-mix(in srgb, var(--color-brand-accent) 8%, transparent);
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.navLoginBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  border-radius: 140px;
+  font-size: var(--font-size-4);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-font-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease;
+}
+
+.navLoginBtn:hover {
+  background: var(--color-surface-l2);
+}
+
+.navGetStartedBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  background: var(--color-surface-invert);
+  border: none;
+  border-radius: 140px;
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-font-inverse);
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  transition: opacity 120ms ease;
+}
+
+.navGetStartedBtn:hover {
+  opacity: 0.88;
+}
+
+/* ── Page body (sidebar + main card) ─────────────────────────────────────── */
+.pageBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
 /* ── Left sidebar ─────────────────────────────────────────────────────────── */
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   background: var(--color-surface-l2);
 }
@@ -27,7 +148,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   background: var(--color-surface-ground);
   border-radius: 16px 0 0 16px;
@@ -420,6 +541,10 @@
 @media (max-width: 1200px) {
   .sidebar { display: none; }
   .mainCard { border-radius: 0; }
+}
+
+@media (max-width: 768px) {
+  .navTabs { display: none; }
 }
 
 @media (max-width: 1024px) {
