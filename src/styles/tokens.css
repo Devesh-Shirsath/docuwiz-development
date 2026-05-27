@@ -18,32 +18,32 @@
   --font-serif: 'Libre Baskerville', Georgia, serif;
   --font-mono: 'Geist Mono', 'Fira Code', monospace;
 
-  /* --- Font Sizes --- */
-  --font-size-0: 11px;   /* caption-s */
-  --font-size-1: 12px;   /* body-xs / caption-m */
-  --font-size-2: 13px;   /* body-s code / actions-s */
-  --font-size-3: 14px;   /* body-s / actions-m */
-  --font-size-4: 15px;   /* body-m */
-  --font-size-5: 16px;   /* body-l / code-l */
-  --font-size-6: 17px;   /* heading-h2 */
-  --font-size-7: 18px;   /* body-xl */
-  --font-size-8: 21px;   /* heading-h1 */
-  --font-size-9: 28px;   /* heading-mobile-display */
-  --font-size-10: 40px;  /* heading-title */
+  /* --- Font Sizes (rem ÷ 16 — scales with html font-size breakpoints below) --- */
+  --font-size-0: 0.6875rem;   /* caption-s    — 11px @ 16px base */
+  --font-size-1: 0.75rem;     /* body-xs / caption-m — 12px */
+  --font-size-2: 0.8125rem;   /* body-s code / actions-s — 13px */
+  --font-size-3: 0.875rem;    /* body-s / actions-m — 14px */
+  --font-size-4: 0.9375rem;   /* body-m — 15px */
+  --font-size-5: 1rem;        /* body-l / code-l — 16px */
+  --font-size-6: 1.0625rem;   /* heading-h2 — 17px */
+  --font-size-7: 1.125rem;    /* body-xl — 18px */
+  --font-size-8: 1.3125rem;   /* heading-h1 — 21px */
+  --font-size-9: 1.75rem;     /* heading-mobile-display — 28px */
+  --font-size-10: 2.5rem;     /* heading-title — 40px */
 
-  /* --- Line Heights --- */
-  --line-height-0: 48px;
-  --line-height-1: 26px;
-  --line-height-2: 24px;
-  --line-height-3: 40px;
-  --line-height-4: 28px;
-  --line-height-7: 22.5px;
-  --line-height-10: 22px;
-  --line-height-13: 18px;
-  --line-height-14: 20px;
-  --line-height-20: 21px;
-  --line-height-22: 16px;
-  --line-height-26: 15px;
+  /* --- Line Heights (rem ÷ 16) --- */
+  --line-height-0: 3rem;        /* 48px */
+  --line-height-1: 1.625rem;    /* 26px */
+  --line-height-2: 1.5rem;      /* 24px */
+  --line-height-3: 2.5rem;      /* 40px */
+  --line-height-4: 1.75rem;     /* 28px */
+  --line-height-7: 1.40625rem;  /* 22.5px */
+  --line-height-10: 1.375rem;   /* 22px */
+  --line-height-13: 1.125rem;   /* 18px */
+  --line-height-14: 1.25rem;    /* 20px */
+  --line-height-20: 1.3125rem;  /* 21px */
+  --line-height-22: 1rem;       /* 16px */
+  --line-height-26: 0.9375rem;  /* 15px */
 
   /* --- Letter Spacing --- */
   --letter-spacing-0: 0%;
@@ -51,43 +51,43 @@
   --letter-spacing-2: 2%;
   --letter-spacing-4: 4%;
 
-  /* --- Typography Composites --- */
+  /* --- Typography Composites (rem/rem — responsive via html font-size) --- */
   /* Headings */
-  --typography-title:           500 40px/48px var(--font-serif);
-  --typography-mobile-display:  700 28px/40px var(--font-serif);
-  --typography-h1:              700 21px/26px var(--font-sans);
-  --typography-h2:              700 17px/24px var(--font-sans);
+  --typography-title:           500 2.5rem/3rem var(--font-serif);
+  --typography-mobile-display:  700 1.75rem/2.5rem var(--font-serif);
+  --typography-h1:              700 1.3125rem/1.625rem var(--font-sans);
+  --typography-h2:              700 1.0625rem/1.5rem var(--font-sans);
 
   /* Body */
-  --typography-body-xl-regular: 400 18px/28px var(--font-sans);
-  --typography-body-l-medium:   500 16px/24px var(--font-sans);
-  --typography-body-l-regular:  400 16px/24px var(--font-sans);
-  --typography-body-m-regular:  400 15px/22.5px var(--font-sans);
-  --typography-body-m-medium:   500 15px/22.5px var(--font-sans);
-  --typography-body-m-heavy:    600 15px/22.5px var(--font-sans);
-  --typography-body-s-regular:  400 14px/22px var(--font-sans);
-  --typography-body-s-medium:   500 14px/22px var(--font-sans);
-  --typography-body-s-heavy:    600 14px/22px var(--font-sans);
-  --typography-body-xs-regular: 400 12px/18px var(--font-sans);
-  --typography-body-xs-medium:  500 12px/20px var(--font-sans);
-  --typography-body-xs-heavy:   600 12px/18px var(--font-sans);
+  --typography-body-xl-regular: 400 1.125rem/1.75rem var(--font-sans);
+  --typography-body-l-medium:   500 1rem/1.5rem var(--font-sans);
+  --typography-body-l-regular:  400 1rem/1.5rem var(--font-sans);
+  --typography-body-m-regular:  400 0.9375rem/1.40625rem var(--font-sans);
+  --typography-body-m-medium:   500 0.9375rem/1.40625rem var(--font-sans);
+  --typography-body-m-heavy:    600 0.9375rem/1.40625rem var(--font-sans);
+  --typography-body-s-regular:  400 0.875rem/1.375rem var(--font-sans);
+  --typography-body-s-medium:   500 0.875rem/1.375rem var(--font-sans);
+  --typography-body-s-heavy:    600 0.875rem/1.375rem var(--font-sans);
+  --typography-body-xs-regular: 400 0.75rem/1.125rem var(--font-sans);
+  --typography-body-xs-medium:  500 0.75rem/1.25rem var(--font-sans);
+  --typography-body-xs-heavy:   600 0.75rem/1.125rem var(--font-sans);
 
   /* Code */
-  --typography-code-l-medium:   500 16px/24px var(--font-mono);
-  --typography-code-l-regular:  400 16px/24px var(--font-mono);
-  --typography-code-m-medium:   600 14px/22px var(--font-mono);
-  --typography-code-m-regular:  400 14px/22px var(--font-mono);
-  --typography-code-s-medium:   500 13px/21px var(--font-mono);
-  --typography-code-s-regular:  400 13px/21px var(--font-mono);
+  --typography-code-l-medium:   500 1rem/1.5rem var(--font-mono);
+  --typography-code-l-regular:  400 1rem/1.5rem var(--font-mono);
+  --typography-code-m-medium:   600 0.875rem/1.375rem var(--font-mono);
+  --typography-code-m-regular:  400 0.875rem/1.375rem var(--font-mono);
+  --typography-code-s-medium:   500 0.8125rem/1.3125rem var(--font-mono);
+  --typography-code-s-regular:  400 0.8125rem/1.3125rem var(--font-mono);
 
   /* Captions */
-  --typography-caption-m:       500 12px/16px var(--font-sans);  /* uppercase + 4% ls */
-  --typography-caption-s:       500 11px/16px var(--font-sans);  /* uppercase + 4% ls */
+  --typography-caption-m:       500 0.75rem/1rem var(--font-sans);    /* uppercase + 4% ls */
+  --typography-caption-s:       500 0.6875rem/1rem var(--font-sans);  /* uppercase + 4% ls */
 
   /* Actions */
-  --typography-action-m-heavy:   500 14px/21px var(--font-sans);
-  --typography-action-m-regular: 600 14px/21px var(--font-sans);
-  --typography-action-s:         500 13px/15px var(--font-sans);
+  --typography-action-m-heavy:   500 0.875rem/1.3125rem var(--font-sans);
+  --typography-action-m-regular: 600 0.875rem/1.3125rem var(--font-sans);
+  --typography-action-s:         500 0.8125rem/0.9375rem var(--font-sans);
 
   /* --- Base Gray Scale (Light) --- */
   --color-gray-100: #ffffff;
@@ -499,9 +499,24 @@
   padding: 0;
 }
 
+/* ---------------------------------------------------------------------------
+   RESPONSIVE ROOT FONT SIZE
+   All rem values in this system are relative to this base.
+   The design canvas (Framer) is 1800–1919px wide at 16px base, so 1rem = 1px
+   at that breakpoint. All other viewports scale proportionally.
+   --------------------------------------------------------------------------- */
+html {
+  font-size: 12px;   /* 390px – 1279px (mobile + small tablet) */
+}
+@media (min-width: 1280px) { html { font-size: 13px; } }
+@media (min-width: 1440px) { html { font-size: 14px; } }
+@media (min-width: 1800px) { html { font-size: 16px; } } /* design base — 1:1 */
+@media (min-width: 1920px) { html { font-size: 18px; } }
+@media (min-width: 2200px) { html { font-size: 19px; } }
+@media (min-width: 2560px) { html { font-size: 20px; } }
+
 html {
   font-family: var(--font-sans);
-  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--color-font-primary);
