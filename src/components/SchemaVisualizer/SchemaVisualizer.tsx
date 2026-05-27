@@ -42,7 +42,37 @@ export interface SchemaVisualizerProps {
   contentType?: string;
   /** Initial tab. Defaults to "schema". */
   defaultTab?: 'schema' | 'example';
+  /**
+   * `"schema"` (default) — read-only field explorer.
+   * `"tryout"` — adds an input field next to each primitive field so users
+   * can enter test values. Object / array-of-object fields continue to use
+   * "View Properties →" navigation. At ≥ 1280 px the layout is two-column;
+   * below that inputs stack below the field info.
+   */
+  mode?: 'schema' | 'tryout';
+  /**
+   * Called whenever a tryout input changes.
+   * Receives the full flat map of path → value (e.g. `"root.agent.mobile": "9999999999"`).
+   */
+  onTryoutChange?: (values: Record<string, string>) => void;
   className?: string;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tryout input helpers
+   ───────────────────────────────────────────────────────────────────────────── */
+
+function getTryoutPlaceholder(schema: JSONSchema): string {
+  if (schema.example !== undefined) return String(schema.example);
+  if (schema.default !== undefined) return String(schema.default);
+  if (schema.format) return `<${schema.format}>`;
+  const type = getEffectiveType(schema);
+  if (type === 'integer' || type === 'number') return '0';
+  if (type === 'boolean') return 'true / false';
+  if (Array.isArray((schema as any).enum)) {
+    return (schema as any).enum.join(' | ');
+  }
+  return '';
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -191,12 +221,25 @@ interface FieldRowProps {
   defs: SchemaDefinitions;
   required: boolean;
   onViewProperties: () => void;
+  /** "tryout" adds a text input next to primitive fields. */
+  mode?: 'schema' | 'tryout';
+  inputValue?: string;
+  onInputChange?: (value: string) => void;
 }
 
-function FieldRow({ fieldName, schema, defs, required, onViewProperties }: FieldRowProps) {
-  const resolved = resolveSchema(schema, defs);
-  const type = getEffectiveType(resolved);
-  const chips = getConstraintChips(resolved);
+function FieldRow({
+  fieldName,
+  schema,
+  defs,
+  required,
+  onViewProperties,
+  mode = 'schema',
+  inputValue = '',
+  onInputChange,
+}: FieldRowProps) {
+  const resolved  = resolveSchema(schema, defs);
+  const type      = getEffectiveType(resolved);
+  const chips     = getConstraintChips(resolved);
   const navigable = getNavigableSchema(resolved, defs);
 
   const typeLabel = (() => {
@@ -213,8 +256,13 @@ function FieldRow({ fieldName, schema, defs, required, onViewProperties }: Field
     return type;
   })();
 
-  return (
-    <div className={styles.fieldRow}>
+  // Primitive fields in tryout mode get an input; navigable fields keep "View Properties →"
+  const showInput = mode === 'tryout' && !navigable;
+  const placeholder = showInput ? getTryoutPlaceholder(resolved) : '';
+
+  /* ── Info column (shared between both modes) ── */
+  const infoContent = (
+    <>
       <div className={styles.fieldTop}>
         <span className={styles.fieldIcon}>
           <DataTypeIcon type={type} size={18} />
@@ -246,6 +294,34 @@ function FieldRow({ fieldName, schema, defs, required, onViewProperties }: Field
           </button>
         </div>
       )}
+    </>
+  );
+
+  /* ── Tryout layout: two-column grid ── */
+  if (showInput) {
+    return (
+      <div className={[styles.fieldRow, styles.fieldRowTryout].join(' ')}>
+        <div className={styles.fieldRowInfo}>
+          {infoContent}
+        </div>
+        <div className={styles.fieldRowInputCol}>
+          <input
+            type="text"
+            className={styles.tryoutInput}
+            value={inputValue}
+            onChange={e => onInputChange?.(e.target.value)}
+            placeholder={placeholder}
+            aria-label={`Value for ${fieldName}`}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Default (schema) layout ── */
+  return (
+    <div className={styles.fieldRow}>
+      {infoContent}
     </div>
   );
 }
@@ -259,12 +335,19 @@ export function SchemaVisualizer({
   schemaName = 'Schema',
   contentType = 'application/json',
   defaultTab = 'schema',
+  mode = 'schema',
+  onTryoutChange,
   className,
 }: SchemaVisualizerProps) {
   /* ── Core state ─────────────────────────────────────────────────────────── */
-  const [sidebarOpen, setSidebarOpen]   = useState(true);
-  const [activeTab, setActiveTab]       = useState<'schema' | 'example'>(defaultTab);
+  // Below 1440 px: sidebar collapsed by default
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth >= 1440;
+  });
+  const [activeTab, setActiveTab]           = useState<'schema' | 'example'>(defaultTab);
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
+  const [tryoutValues, setTryoutValues]     = useState<Record<string, string>>({});
 
   const rootResolved = useMemo(
     () => resolveSchema(schema, definitions),
@@ -280,19 +363,17 @@ export function SchemaVisualizer({
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbEntry[]>(makeRootBreadcrumb);
 
   /* ── Right-panel scroll / highlight ────────────────────────────────────── */
-  const [scrollTarget,    setScrollTarget]    = useState<string | null>(null);
+  const [scrollTarget,     setScrollTarget]     = useState<string | null>(null);
   const [highlightedField, setHighlightedField] = useState<string | null>(null);
-  const fieldRefsMap    = useRef<Record<string, HTMLElement | null>>({});
+  const fieldRefsMap     = useRef<Record<string, HTMLElement | null>>({});
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   /* ── Left-panel (tree) scroll ───────────────────────────────────────────── */
-  /** Path key of the tree row to scroll into view after navigation. */
   const [treeScrollTarget, setTreeScrollTarget] = useState<string | null>(null);
   const treeRowRefsMap = useRef<Record<string, HTMLElement | null>>({});
 
   /* ─────────────────────────────────────────────────────────────────────────
-     REACTIVE: reset the whole navigator when schema/definitions/schemaName
-     props change (e.g. Storybook controls, runtime schema swap).
+     REACTIVE: reset when schema/definitions/schemaName change.
      ───────────────────────────────────────────────────────────────────────── */
   useEffect(() => {
     setBreadcrumb([{
@@ -304,9 +385,10 @@ export function SchemaVisualizer({
     setHighlightedField(null);
     setTreeScrollTarget(null);
     setCollapsedPaths(new Set());
+    setTryoutValues({});
     contentScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schema, definitions, schemaName]); // intentionally NOT rootResolved to avoid double-fire
+  }, [schema, definitions, schemaName]);
 
   /* ── Right-panel scroll effect ──────────────────────────────────────────── */
   useEffect(() => {
@@ -336,11 +418,11 @@ export function SchemaVisualizer({
   }, [treeScrollTarget, breadcrumb]);
 
   /* ── Derived ────────────────────────────────────────────────────────────── */
-  const current        = breadcrumb[breadcrumb.length - 1];
-  const currentSchema  = current.schema;
+  const current         = breadcrumb[breadcrumb.length - 1];
+  const currentSchema   = current.schema;
   const currentRequired = current.requiredFields;
-  const currentType    = getEffectiveType(currentSchema);
-  const properties     = currentSchema.properties ?? {};
+  const currentType     = getEffectiveType(currentSchema);
+  const properties      = currentSchema.properties ?? {};
 
   const treeNodes = useMemo<TreeNode[]>(() => {
     const out: TreeNode[] = [];
@@ -358,21 +440,30 @@ export function SchemaVisualizer({
     [currentSchema, definitions],
   );
 
+  /* ── Tryout helpers ─────────────────────────────────────────────────────── */
+  /** Stable path key so values survive breadcrumb navigation (e.g. root.agent.mobile). */
+  const getFieldKey = (fieldName: string) =>
+    [...breadcrumb.map(e => e.label), fieldName].join('.');
+
+  const handleTryoutChange = (fieldName: string, value: string) => {
+    const key = getFieldKey(fieldName);
+    setTryoutValues(prev => {
+      const next = { ...prev, [key]: value };
+      onTryoutChange?.(next);
+      return next;
+    });
+  };
+
   /* ── Handlers ───────────────────────────────────────────────────────────── */
   const handleNavigateTo = (index: number) => {
     setBreadcrumb(prev => prev.slice(0, index + 1));
-    // Scroll tree to the breadcrumb level we're going back to
     const targetPath = breadcrumb.slice(0, index + 1).map(e => e.label.replace(/\[\]$/, '')).join('\0');
     setTreeScrollTarget(targetPath);
   };
 
-  /**
-   * "View Properties →" button: navigate INTO the field.
-   * Also scrolls the tree to the matching node.
-   */
   const handleViewProperties = (fieldName: string, fieldSchema: JSONSchema) => {
-    const resolved   = resolveSchema(fieldSchema, definitions);
-    const navTarget  = getNavigableSchema(resolved, definitions);
+    const resolved  = resolveSchema(fieldSchema, definitions);
+    const navTarget = getNavigableSchema(resolved, definitions);
     if (!navTarget) return;
 
     const type  = getEffectiveType(resolved);
@@ -387,14 +478,11 @@ export function SchemaVisualizer({
 
     setBreadcrumb(prev => [...prev, newEntry]);
 
-    // Scroll the tree to the node we just navigated into
     const newTreePathKey = [...breadcrumbKeys, fieldName].join('\0');
     setTreeScrollTarget(newTreePathKey);
 
-    // Also auto-expand the path in the tree so the node is visible
     setCollapsedPaths(prev => {
       const next = new Set(prev);
-      // Ensure every ancestor node along this path is expanded
       for (let d = 1; d <= breadcrumbKeys.length; d++) {
         next.delete(breadcrumbKeys.slice(0, d).join('\0'));
       }
@@ -403,21 +491,15 @@ export function SchemaVisualizer({
     });
   };
 
-  /**
-   * Tree click: navigate breadcrumb to the PARENT of the clicked node,
-   * then scroll the right panel to the clicked field.
-   */
   const handleTreeNodeClick = (node: TreeNode) => {
     const fieldKey = node.path[node.path.length - 1];
 
-    // Root node → reset to root
     if (node.path.length === 1) {
       setBreadcrumb(makeRootBreadcrumb());
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    // Navigate breadcrumb to this node's parent, then scroll to the field
     const parentPath = node.path.slice(0, -1);
     let walkSchema   = rootResolved;
     const newBreadcrumb: BreadcrumbEntry[] = [{
@@ -482,10 +564,11 @@ export function SchemaVisualizer({
         <div className={styles.toolbar}>
           <button
             type="button"
-            className={styles.toolbarToggle}
+            className={[styles.toolbarToggle, sidebarOpen ? styles.toolbarToggleActive : ''].join(' ')}
             onClick={() => setSidebarOpen(v => !v)}
             aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-pressed={sidebarOpen}
           >
             <SidebarSimple size={14} />
           </button>
@@ -546,6 +629,9 @@ export function SchemaVisualizer({
                         defs={definitions}
                         required={currentRequired.has(key)}
                         onViewProperties={() => handleViewProperties(key, fieldSchema)}
+                        mode={mode}
+                        inputValue={tryoutValues[getFieldKey(key)] ?? ''}
+                        onInputChange={val => handleTryoutChange(key, val)}
                       />
                     </div>
                   ))}

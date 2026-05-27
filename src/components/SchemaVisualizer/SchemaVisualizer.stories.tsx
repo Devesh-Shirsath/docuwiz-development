@@ -60,6 +60,11 @@ two-panel explorer.
       control: 'radio',
       options: ['schema', 'example'],
     },
+    mode: {
+      control: 'radio',
+      options: ['schema', 'tryout'],
+      description: '`"schema"` — read-only explorer. `"tryout"` — adds input fields next to primitive properties.',
+    },
   },
 };
 
@@ -919,4 +924,130 @@ export const WithRefResolution: Story = {
       </div>
     ),
   ],
+};
+
+/* ── Tryout mode ─────────────────────────────────────────────────────────── */
+
+/** BBPS FetchBill request — realistic API tryout schema. */
+const fetchBillSchema: JSONSchema = {
+  title: 'FetchBillRequest',
+  type: 'object',
+  description:
+    'Request body for initiating a BBPS bill fetch. customerIdentifiers, agent, billerIds, and fetchRequirement are required.',
+  required: ['customerIdentifiers', 'agent', 'billerIds', 'fetchRequirement'],
+  properties: {
+    fetchRequirement: {
+      type: 'string',
+      description: 'Indicates what data to retrieve from the biller.',
+      enum: ['BILLS', 'DUE_DATE', 'LEDGER'],
+      example: 'BILLS',
+    },
+    paymentInfo: {
+      type: 'string',
+      description: 'Optional payment reference to include with the fetch request.',
+      example: 'prod-instance-xxxx-xxxx',
+    },
+    status: {
+      type: 'string',
+      description: 'Current status flag for the fetch request lifecycle.',
+      example: 'PENDING',
+    },
+    success: {
+      type: 'boolean',
+      description: 'Indicates whether the last fetch attempt was successful.',
+      default: false,
+    },
+    refId: {
+      type: 'string',
+      format: 'uuid',
+      description: 'Idempotency key — resend with the same refId to retry safely.',
+    },
+    customerIdentifiers: {
+      type: 'array',
+      description: 'List of identifier key-value pairs that identify the customer on the biller system.',
+      items: {
+        type: 'object',
+        required: ['attributeName', 'attributeValue'],
+        properties: {
+          attributeName:  { type: 'string', example: 'mobileNumber' },
+          attributeValue: { type: 'string', example: '9999999999' },
+        },
+      },
+    },
+    agent: {
+      type: 'object',
+      description: 'Agent / channel context for the request.',
+      required: ['app', 'channel', 'id', 'type'],
+      properties: {
+        app:     { type: 'string', example: 'setuBillPay' },
+        channel: { type: 'string', enum: ['INT', 'MOB', 'INTB', 'MOBB'], example: 'INT' },
+        id:      { type: 'string', example: 'agent-001' },
+        type:    { type: 'string', enum: ['BUSINESS', 'RETAIL', 'CORPORATE'], example: 'BUSINESS' },
+        mobile:  { type: 'string', format: 'phone', example: '9999999999' },
+        geocode: { type: 'string', example: '28.6139,77.2090' },
+      },
+    },
+    billerIds: {
+      type: 'array',
+      description: 'One or more biller IDs to fetch bills from.',
+      items: { type: 'string', example: 'MAHA0000ELEC001' },
+    },
+  },
+};
+
+export const TryoutMode: Story = {
+  name: 'Tryout mode — input fields',
+  render: () => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [values, setValues] = React.useState<Record<string, string>>({});
+    return (
+      <div style={{ height: '640px', padding: '24px' }}>
+        <SchemaVisualizer
+          schema={fetchBillSchema}
+          schemaName="FetchBillRequest"
+          mode="tryout"
+          onTryoutChange={setValues}
+        />
+        {Object.keys(values).length > 0 && (
+          <pre style={{ marginTop: 16, fontSize: 11, color: '#888', overflow: 'auto' }}>
+            {JSON.stringify(values, null, 2)}
+          </pre>
+        )}
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Set `mode="tryout"` to add an input field next to every primitive field. ' +
+          'Object and array-of-object fields keep the **View Properties →** navigation. ' +
+          'At ≥ 1280 px the layout is two-column (field info + input side-by-side); ' +
+          'below that inputs stack under the field description. ' +
+          'Use `onTryoutChange` to receive the live value map.',
+      },
+    },
+  },
+};
+
+export const TryoutMobileLayout: Story = {
+  name: 'Tryout mode — mobile (stacked)',
+  render: () => (
+    <div style={{ width: 420, height: '640px', padding: '16px' }}>
+      <SchemaVisualizer
+        schema={fetchBillSchema}
+        schemaName="FetchBillRequest"
+        mode="tryout"
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Below 1280 px the tryout inputs stack below the field description. ' +
+          'This story constrains the container to 420 px to simulate a mobile viewport.',
+      },
+    },
+  },
 };

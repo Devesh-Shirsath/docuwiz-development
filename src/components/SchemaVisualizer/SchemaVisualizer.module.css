@@ -207,6 +207,11 @@
   outline: none;
 }
 
+.toolbarToggleActive {
+  color: var(--color-font-primary);
+  background: var(--color-surface-l2);
+}
+
 /* Breadcrumb area */
 .breadcrumb {
   display: flex;
@@ -580,6 +585,75 @@
   text-align: center;
 }
 
+/* ── Tryout mode — two-column field layout ────────────────────────────────── */
+
+/*
+ * When mode="tryout" and the field is a primitive, .fieldRowTryout adds a
+ * CSS grid: left col = field info (name/type/desc/chips), right col = input.
+ * Below 1280 px the grid collapses to a single column (input stacks below).
+ */
+.fieldRowTryout {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 0 24px;
+  align-items: start;
+}
+
+.fieldRowInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fieldRowInputCol {
+  /* Align the input with the first line of the field info */
+  padding-top: 2px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ── Tryout text input ────────────────────────────────────────────────────── */
+.tryoutInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-stroke-gray-secondary);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-step-up);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-3);
+  font-weight: 400;
+  color: var(--color-font-primary);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tryoutInput::placeholder {
+  color: var(--color-font-disabled);
+}
+
+.tryoutInput:hover {
+  border-color: var(--color-stroke-gray-tertiary);
+}
+
+.tryoutInput:focus {
+  border-color: var(--color-brand-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-accent) 18%, transparent);
+}
+
+/* ── Responsive: stack input below field info on narrow viewports ─────────── */
+@media (max-width: 1279px) {
+  .fieldRowTryout {
+    grid-template-columns: 1fr;
+    gap: 12px 0;
+  }
+
+  .fieldRowInputCol {
+    padding-top: 0;
+  }
+}
+
 /* ── Dark mode ────────────────────────────────────────────────────────────── */
 [data-theme='dark'] .treeRowActive {
   background: var(--color-gray-600);
@@ -587,4 +661,8 @@
 
 [data-theme='dark'] .exampleCode {
   background: var(--color-gray-200);
+}
+
+[data-theme='dark'] .tryoutInput {
+  background: var(--color-surface-ground);
 }
