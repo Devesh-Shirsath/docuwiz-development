@@ -156,17 +156,17 @@
   background: transparent;
   outline: none;
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: var(--font-size-3);
   font-weight: 400;
-  line-height: 1.375rem;
+  line-height: var(--line-height-10);
   color: var(--color-font-primary);
   caret-color: var(--color-brand-accent);
   padding: 0;
 }
 
 .field_small .input {
-  font-size: 0.8125rem;
-  line-height: 1.3125rem;
+  font-size: var(--font-size-2);
+  line-height: var(--line-height-20);
 }
 
 .input::placeholder {
@@ -233,7 +233,7 @@
 .prefix,
 .suffix {
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: var(--font-size-3);
   color: var(--color-font-tertiary);
   white-space: nowrap;
   user-select: none;
@@ -268,7 +268,7 @@
 .helper {
   font: var(--typography-body-xs-regular);
   color: var(--color-font-tertiary);
-  line-height: 18px;
+  line-height: var(--line-height-13);
 }
 
 .helper_error   { color: var(--color-accent-red-primary); }
