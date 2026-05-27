@@ -1,5 +1,5 @@
 /* =============================================================================
-   API REFERENCE PAGE — Full-page layout for endpoint documentation
+   API REFERENCE PAGE
    ============================================================================= */
 
 /* ── Page shell ──────────────────────────────────────────────────────────── */
@@ -7,7 +7,7 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: var(--color-surface-ground);
+  background: var(--color-surface-l2);
   font-family: var(--font-sans);
   color: var(--color-font-primary);
 }
@@ -18,80 +18,30 @@
   flex-shrink: 0;
   height: 100vh;
   overflow-y: auto;
-  border-right: 1px solid var(--color-stroke-gray-secondary);
-  background: var(--color-surface-ground);
+  background: var(--color-surface-l2);
 }
 
-/* ── Main (content + code panel) ─────────────────────────────────────────── */
-.main {
+/* ── Main card (white pill with rounded left corners) ────────────────────── */
+.mainCard {
   flex: 1;
   min-width: 0;
-  display: flex;
-  overflow: hidden;
-}
-
-/* ── Scrollable content column ───────────────────────────────────────────── */
-.content {
-  flex: 1;
-  min-width: 0;
-  overflow-y: auto;
-  padding: 40px 48px 80px;
-}
-
-/* ── Dark code panel (right column) ──────────────────────────────────────── */
-.codePanel {
-  width: 440px;
-  flex-shrink: 0;
-  height: 100vh;
-  overflow-y: auto;
-  background: #13151f;
-  border-left: 1px solid #2a2d3e;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-surface-ground);
+  border-radius: 16px 0 0 16px;
 }
 
-/* ── Code panel inner sections ───────────────────────────────────────────── */
-.codePanelSection {
-  border-bottom: 1px solid #2a2d3e;
+/* ── Card header (fixed, never scrolls) ──────────────────────────────────── */
+.cardHeader {
+  flex-shrink: 0;
+  padding: 32px 48px 0;
+  background: var(--color-surface-ground);
+  border-bottom: 1px solid var(--color-stroke-gray-secondary);
 }
 
-.codePanelSection:last-child {
-  border-bottom: none;
-}
-
-.codePanelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #2a2d3e;
-}
-
-.codePanelLabel {
-  font-size: var(--font-size-2);
-  font-weight: 500;
-  color: #9399b2;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* ── Host selector in code panel ─────────────────────────────────────────── */
-.hostRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #2a2d3e;
-}
-
-.hostLabel {
-  font-size: var(--font-size-2);
-  color: #6c7086;
-  white-space: nowrap;
-}
-
-/* ── Endpoint header (breadcrumb + title + mode toggle) ──────────────────── */
+/* ── Breadcrumb ───────────────────────────────────────────────────────────── */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -102,6 +52,8 @@
 .breadcrumbItem {
   font-size: var(--font-size-2);
   color: var(--color-font-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .breadcrumbSep {
@@ -113,62 +65,186 @@
   color: var(--color-font-secondary);
 }
 
-.endpointHeader {
-  margin-bottom: 24px;
-}
-
+/* ── Endpoint title + description ────────────────────────────────────────── */
 .endpointTitle {
   font-size: var(--font-size-9);
   font-weight: 600;
   line-height: var(--line-height-0);
   color: var(--color-font-primary);
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
 .endpointDescription {
   font-size: var(--font-size-3);
   line-height: var(--line-height-4);
   color: var(--color-font-secondary);
-  margin: 0 0 16px;
+  margin: 0 0 20px;
+  max-width: 680px;
 }
 
-.endpointPath {
+/* ── Path bar ─────────────────────────────────────────────────────────────── */
+.pathBar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 0 14px;
+}
+
+.pathLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .pathString {
   font-family: var(--font-mono);
   font-size: var(--font-size-3);
   color: var(--color-font-secondary);
-  background: var(--color-surface-l2);
-  padding: 4px 10px;
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--color-stroke-gray-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ── Mode toggle row ─────────────────────────────────────────────────────── */
-.modeRow {
+.pathActions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--color-stroke-gray-secondary);
-}
-
-.modeTabsWrap {
+  gap: 6px;
   flex-shrink: 0;
 }
 
-/* ── Section block ───────────────────────────────────────────────────────── */
+/* ── Path action buttons ─────────────────────────────────────────────────── */
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  background: none;
+  border: 1px solid var(--color-stroke-gray-secondary);
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-2);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-font-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.actionBtn:hover {
+  background: var(--color-surface-l2);
+  color: var(--color-font-primary);
+}
+
+/* ── View / Tryout mode toggle ───────────────────────────────────────────── */
+.modeToggle {
+  display: flex;
+  border: 1px solid var(--color-stroke-gray-secondary);
+  border-radius: var(--radius-button);
+  overflow: hidden;
+  background: var(--color-surface-ground);
+}
+
+.modeBtn {
+  height: 26px;
+  padding: 0 14px;
+  background: none;
+  border: none;
+  font-size: var(--font-size-2);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--color-font-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.modeBtn + .modeBtn {
+  border-left: 1px solid var(--color-stroke-gray-secondary);
+}
+
+.modeBtnActive {
+  background: var(--color-surface-l3);
+  color: var(--color-font-primary);
+}
+
+.modeBtn:hover:not(.modeBtnActive) {
+  background: var(--color-surface-l2);
+}
+
+/* ── Card body (two-column) ──────────────────────────────────────────────── */
+.cardBody {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Left: scrollable content ────────────────────────────────────────────── */
+.contentCol {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 28px 48px 80px;
+}
+
+/* ── Right: code panel (dark, scrolls independently) ────────────────────── */
+.codeCol {
+  width: 440px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  background: #13151f;
+  border-left: 1px solid #2a2d3e;
+}
+
+/* ── Host section ────────────────────────────────────────────────────────── */
+.hostSection {
+  margin-bottom: 28px;
+  padding: 16px;
+  border: 1px solid var(--color-stroke-gray-secondary);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hostIcon {
+  display: flex;
+  align-items: center;
+  color: var(--color-icon-secondary);
+  flex-shrink: 0;
+}
+
+.hostTextGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+.hostSectionLabel {
+  font-size: var(--font-size-5);
+  font-weight: 600;
+  line-height: var(--line-height-2);
+  color: var(--color-font-primary);
+  margin-bottom: 2px;
+}
+
+.hostSectionSub {
+  font-size: var(--font-size-2);
+  color: var(--color-font-tertiary);
+}
+
+.hostDropdownWrap {
+  flex-shrink: 0;
+  width: 220px;
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
 .section {
   margin-bottom: 32px;
 }
 
-/* ── Collapsible section ─────────────────────────────────────────────────── */
+/* ── Collapsible trigger ─────────────────────────────────────────────────── */
 .collapsibleTrigger {
   display: flex;
   align-items: center;
@@ -177,7 +253,7 @@
   background: none;
   border: none;
   border-radius: var(--radius-xs);
-  padding: 8px 0;
+  padding: 6px 0;
   cursor: pointer;
   color: var(--color-font-primary);
   text-align: left;
@@ -190,7 +266,13 @@
 .collapsibleCaret {
   flex-shrink: 0;
   color: var(--color-icon-secondary);
-  transition: transform 150ms ease;
+  display: flex;
+  align-items: center;
+}
+
+.collapsibleIcon {
+  flex-shrink: 0;
+  color: var(--color-icon-secondary);
   display: flex;
   align-items: center;
 }
@@ -219,7 +301,6 @@
 /* ── Parameter table ─────────────────────────────────────────────────────── */
 .paramTable {
   width: 100%;
-  border-collapse: collapse;
   border: 1px solid var(--color-stroke-gray-secondary);
   border-radius: var(--radius-card);
   overflow: hidden;
@@ -229,7 +310,6 @@
   display: grid;
   grid-template-columns: 180px 1fr;
   border-bottom: 1px solid var(--color-stroke-gray-secondary);
-  min-height: 48px;
 }
 
 .paramRow:last-child {
@@ -277,7 +357,15 @@
   color: var(--color-font-secondary);
 }
 
-/* ── Response section ────────────────────────────────────────────────────── */
+/* ── Response entries ────────────────────────────────────────────────────── */
+.sectionHeading {
+  font-size: var(--font-size-5);
+  font-weight: 600;
+  line-height: var(--line-height-2);
+  color: var(--color-font-primary);
+  margin: 0 0 16px;
+}
+
 .responseEntry {
   border: 1px solid var(--color-stroke-gray-secondary);
   border-radius: var(--radius-card);
@@ -305,13 +393,14 @@
   border: 1px solid var(--color-stroke-green);
 }
 
-.statusCode--error {
+/* Using attribute selectors to avoid CSS Modules hashed name issues */
+.statusCode[data-error="true"] {
   background: var(--color-surface-red);
   color: #c53030;
   border-color: var(--color-stroke-red);
 }
 
-.statusCode--redirect {
+.statusCode[data-redirect="true"] {
   background: var(--color-surface-blue);
   color: #2b6cb0;
   border-color: var(--color-stroke-blue);
@@ -327,56 +416,24 @@
   padding: 16px;
 }
 
-/* ── Section heading (standalone) ───────────────────────────────────────── */
-.sectionHeading {
-  font-size: var(--font-size-5);
-  font-weight: 600;
-  line-height: var(--line-height-2);
-  color: var(--color-font-primary);
-  margin: 0 0 16px;
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .sidebar { display: none; }
+  .mainCard { border-radius: 0; }
 }
 
-/* ── Tryout run bar ───────────────────────────────────────────────────────── */
-.runBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #2a2d3e;
-  background: #1a1e2d;
+@media (max-width: 1024px) {
+  .codeCol { width: 380px; }
+  .contentCol { padding: 24px 32px 80px; }
+  .cardHeader { padding: 24px 32px 0; }
 }
 
-/* ── Responsive: hide code panel on narrow viewports ─────────────────────── */
-@media (max-width: 1100px) {
-  .sidebar {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .content {
-    padding: 24px 24px 80px;
-  }
-
-  .codePanel {
-    width: 360px;
-  }
-}
-
-@media (max-width: 720px) {
-  .main {
-    flex-direction: column;
-    overflow: visible;
-  }
-
-  .content {
-    overflow-y: visible;
-    height: auto;
-  }
-
-  .codePanel {
+@media (max-width: 800px) {
+  .cardBody { flex-direction: column; }
+  .contentCol { overflow-y: visible; }
+  .codeCol {
     width: 100%;
-    height: auto;
+    height: 480px;
     border-left: none;
     border-top: 1px solid #2a2d3e;
   }

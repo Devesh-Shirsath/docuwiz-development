@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { CaretDown, CaretRight } from '@phosphor-icons/react';
+import {
+  CaretDown,
+  CaretRight,
+  Copy,
+  DownloadSimple,
+  Sparkle,
+  CaretDown as ChevronDown,
+  Code,
+  ListBullets,
+  ArrowSquareOut,
+} from '@phosphor-icons/react';
 
 import { SideNav } from '../SideNav/SideNav';
 import { SideNavSection } from '../SideNav/SideNavSection';
@@ -17,18 +27,16 @@ import type { ResponseEntry } from '../CodeBlock/ResponseBlock';
 
 import { Dropdown } from '../Dropdown/Dropdown';
 import { DropdownItem } from '../Dropdown/DropdownItem';
-import { Tabs } from '../Tabs/Tabs';
 import { Input } from '../Input/Input';
 
 import styles from './APIReferencePage.module.css';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/*  Data shapes                                                                 */
+/*  Data types                                                                   */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 export interface ParameterDef {
   name: string;
-  /** Where the parameter is sent. */
   in: 'header' | 'query' | 'path';
   required?: boolean;
   type?: string;
@@ -39,7 +47,6 @@ export interface ParameterDef {
 export interface ResponseDef {
   statusCode: string;
   description?: string;
-  /** JSON schema for the response body. */
   schema?: JSONSchema;
   definitions?: SchemaDefinitions;
 }
@@ -70,11 +77,13 @@ export interface NavSectionDef {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/*  CollapsibleSection — inline sub-component                                   */
+/*  CollapsibleSection                                                           */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 interface CollapsibleSectionProps {
   title: string;
+  /** Icon rendered next to the title. */
+  icon?: React.ReactNode;
   badge?: string | number;
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -82,6 +91,7 @@ interface CollapsibleSectionProps {
 
 function CollapsibleSection({
   title,
+  icon,
   badge,
   defaultOpen = true,
   children,
@@ -97,8 +107,11 @@ function CollapsibleSection({
         aria-expanded={open}
       >
         <span className={styles.collapsibleCaret}>
-          {open ? <CaretDown size={14} weight="bold" /> : <CaretRight size={14} weight="bold" />}
+          {open
+            ? <CaretDown size={14} weight="bold" />
+            : <CaretRight size={14} weight="bold" />}
         </span>
+        {icon && <span className={styles.collapsibleIcon}>{icon}</span>}
         <span className={styles.collapsibleTitle}>{title}</span>
         {badge !== undefined && (
           <span className={styles.collapsibleBadge}>{badge}</span>
@@ -111,7 +124,7 @@ function CollapsibleSection({
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/*  ParameterTable — shows params, optionally with Input fields in tryout mode  */
+/*  ParameterTable                                                               */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 interface ParameterTableProps {
@@ -128,7 +141,7 @@ function ParameterTable({ parameters, mode, values, onChange }: ParameterTablePr
     <div className={styles.paramTable}>
       {parameters.map((param) => (
         <div key={param.name} className={styles.paramRow}>
-          {/* Left: name + type + required */}
+          {/* Left: name + type + required tag */}
           <div className={styles.paramMeta}>
             <span className={styles.paramName}>{param.name}</span>
             {param.type && <span className={styles.paramType}>{param.type}</span>}
@@ -158,54 +171,42 @@ function ParameterTable({ parameters, mode, values, onChange }: ParameterTablePr
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/*  ResponseList — collapsible response entries                                  */
+/*  ResponseList                                                                 */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-interface ResponseListProps {
-  responses: ResponseDef[];
-}
-
-function ResponseList({ responses }: ResponseListProps) {
+function ResponseList({ responses }: { responses: ResponseDef[] }) {
   return (
     <>
       {responses.map((res) => {
         const code = parseInt(res.statusCode, 10);
-        const isError = code >= 400;
+        const isError    = code >= 400;
         const isRedirect = code >= 300 && code < 400;
 
-        const statusCls = [
-          styles.statusCode,
-          isError ? styles['statusCode--error'] : '',
-          isRedirect ? styles['statusCode--redirect'] : '',
-        ]
-          .filter(Boolean)
-          .join(' ');
-
         return (
-          <CollapsibleSection
-            key={res.statusCode}
-            title=""
-            defaultOpen={!isError}
-          >
-            <div className={styles.responseEntry}>
-              <div className={styles.responseHeader}>
-                <span className={statusCls}>{res.statusCode}</span>
-                {res.description && (
-                  <span className={styles.responseDescription}>{res.description}</span>
-                )}
-              </div>
-
-              {res.schema && (
-                <div className={styles.responseBody}>
-                  <SchemaVisualizer
-                    schema={res.schema}
-                    definitions={res.definitions}
-                    mode="schema"
-                  />
-                </div>
+          <div key={res.statusCode} className={styles.responseEntry}>
+            <div className={styles.responseHeader}>
+              <span
+                className={styles.statusCode}
+                data-error={isError ? 'true' : undefined}
+                data-redirect={isRedirect ? 'true' : undefined}
+              >
+                {res.statusCode}
+              </span>
+              {res.description && (
+                <span className={styles.responseDescription}>{res.description}</span>
               )}
             </div>
-          </CollapsibleSection>
+
+            {res.schema && (
+              <div className={styles.responseBody}>
+                <SchemaVisualizer
+                  schema={res.schema}
+                  definitions={res.definitions}
+                  mode="schema"
+                />
+              </div>
+            )}
+          </div>
         );
       })}
     </>
@@ -222,37 +223,37 @@ export interface APIReferencePageProps {
   path: string;
   title: string;
   description?: string;
-  /** Breadcrumb path shown above the title, e.g. ['API', 'Payments']. */
   breadcrumb?: string[];
 
   /* ── Parameters ─── */
-  /** Header parameters shown in the Header Parameters section. */
   headerParameters?: ParameterDef[];
-  /** Query parameters shown in the Query Parameters section. */
   queryParameters?: ParameterDef[];
 
   /* ── Request body ─── */
   requestBodySchema?: JSONSchema;
   requestBodyDefinitions?: SchemaDefinitions;
-  /** Content-type label shown above the request body schema, e.g. 'application/json'. */
   requestBodyContentType?: string;
 
   /* ── Responses ─── */
   responses?: ResponseDef[];
 
   /* ── Code panel ─── */
-  /** Available code samples passed to TryoutPanel / EndpointBlock. */
   codeSamples: TryoutPanelProps['codeSamples'];
   defaultLanguage?: TryoutPanelProps['defaultLanguage'];
-  /** Called when the ▶ Run button is pressed in the code panel. */
   onRun?: TryoutPanelProps['onRun'];
-  /** Pre-defined response entries shown in the ResponseBlock below the code. */
   sampleResponses?: ResponseEntry[];
 
   /* ── Environments ─── */
   environments?: EnvironmentDef[];
-  /** Initially selected environment index. */
   defaultEnvironmentIndex?: number;
+
+  /* ── Path bar actions (all optional) ─── */
+  /** Called when "Copy Page" is pressed. Defaults to copying the current URL. */
+  onCopyPage?: () => void;
+  /** Called when "Open in Claude" is pressed. */
+  onOpenInClaude?: () => void;
+  /** Called when "Download" is pressed. */
+  onDownload?: () => void;
 
   /* ── Navigation ─── */
   navSections?: NavSectionDef[];
@@ -265,13 +266,15 @@ export interface APIReferencePageProps {
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 /**
- * Full-page API reference layout combining:
- * - Left sticky **SideNav** for endpoint navigation
- * - Scrollable **content** area with collapsible parameter, schema, and response sections
- * - Right sticky **code panel** with host selector, code samples, and live tryout
+ * Full-page API reference layout.
  *
- * Toggle between **Schema** mode (read-only) and **Tryout** mode (editable inputs
- * + live run) using the Tabs control at the top of the content area.
+ * Structure:
+ * - **Sidebar** — sticky `SideNav` with endpoint navigation
+ * - **Card header** — breadcrumb, title, description, and the path bar with
+ *   Copy / Open in Claude / Download actions and the **View ↔ Tryout** mode toggle
+ * - **Two-column body**:
+ *   - *Left* — scrollable: host selector, header params, request body schema, responses
+ *   - *Right* — independently-scrolling dark code panel with `TryoutPanel`
  */
 export function APIReferencePage({
   method,
@@ -291,29 +294,33 @@ export function APIReferencePage({
   sampleResponses,
   environments = [],
   defaultEnvironmentIndex = 0,
+  onCopyPage,
+  onOpenInClaude,
+  onDownload,
   navSections = [],
   className,
 }: APIReferencePageProps) {
-  /* ── Mode (schema / tryout) ─── */
+  /* Mode: schema (read-only) or tryout (editable + runnable) */
   const [mode, setMode] = useState<'schema' | 'tryout'>('schema');
 
-  /* ── Parameter values for tryout mode ─── */
+  /* Parameter values for tryout mode */
   const [headerValues, setHeaderValues] = useState<Record<string, string>>({});
-  const [queryValues, setQueryValues]   = useState<Record<string, string>>({});
+  const [queryValues,  setQueryValues]  = useState<Record<string, string>>({});
 
-  /* ── Selected environment ─── */
+  /* Active environment */
   const [envIndex, setEnvIndex] = useState(defaultEnvironmentIndex);
   const activeEnv = environments[envIndex];
 
-  /* ── Schema tryout values (forwarded to onTryoutChange consumers) ─── */
-  const [, setSchemaTryoutValues] = useState<Record<string, string>>({});
+  /* Copy page default handler */
+  const handleCopyPage = () => {
+    if (onCopyPage) { onCopyPage(); return; }
+    try { navigator.clipboard.writeText(window.location.href); } catch { /* silent */ }
+  };
 
   return (
     <div className={[styles.page, className].filter(Boolean).join(' ')}>
 
-      {/* ════════════════════════════════════════════════════════════════
-          LEFT SIDEBAR
-          ════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════ SIDEBAR ════════════════ */}
       {navSections.length > 0 && (
         <aside className={styles.sidebar}>
           <SideNav>
@@ -321,7 +328,6 @@ export function APIReferencePage({
               <React.Fragment key={si}>
                 <SideNavSection label={section.label} variant={section.variant ?? 'category'} />
 
-                {/* Flat items directly under section */}
                 {section.items?.map((item, ii) => (
                   <SideNavItem
                     key={ii}
@@ -333,7 +339,6 @@ export function APIReferencePage({
                   />
                 ))}
 
-                {/* Grouped items */}
                 {section.groups?.map((group, gi) => (
                   <SideNavGroup
                     key={gi}
@@ -360,150 +365,209 @@ export function APIReferencePage({
         </aside>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════
-          MAIN AREA
-          ════════════════════════════════════════════════════════════════ */}
-      <div className={styles.main}>
+      {/* ════════════════ MAIN CARD ════════════════ */}
+      <div className={styles.mainCard}>
 
-        {/* ── Scrollable content column ── */}
-        <div className={styles.content}>
-
+        {/* ── Card header (never scrolls) ── */}
+        <header className={styles.cardHeader}>
           {/* Breadcrumb */}
           {breadcrumb && breadcrumb.length > 0 && (
             <nav className={styles.breadcrumb} aria-label="Breadcrumb">
               {breadcrumb.map((crumb, i) => (
                 <React.Fragment key={i}>
-                  {i > 0 && <span className={styles.breadcrumbSep}>/</span>}
+                  {i > 0 && <span className={styles.breadcrumbSep}>&gt;</span>}
                   <span className={styles.breadcrumbItem}>{crumb}</span>
                 </React.Fragment>
               ))}
             </nav>
           )}
 
-          {/* Endpoint header */}
-          <div className={styles.endpointHeader}>
-            <h1 className={styles.endpointTitle}>{title}</h1>
-            {description && (
-              <p className={styles.endpointDescription}>{description}</p>
-            )}
-            <div className={styles.endpointPath}>
+          {/* Title */}
+          <h1 className={styles.endpointTitle}>{title}</h1>
+
+          {/* Description */}
+          {description && (
+            <p className={styles.endpointDescription}>{description}</p>
+          )}
+
+          {/* Path bar */}
+          <div className={styles.pathBar}>
+            {/* Left: method badge + path */}
+            <div className={styles.pathLeft}>
               <MethodBadge method={method} />
               <span className={styles.pathString}>{path}</span>
             </div>
-          </div>
 
-          {/* Mode toggle */}
-          <div className={styles.modeRow}>
-            <div className={styles.modeTabsWrap}>
-              <Tabs
-                variant="pill"
-                tabs={[
-                  { value: 'schema', label: 'Schema' },
-                  { value: 'tryout', label: 'Try it out' },
-                ]}
-                value={mode}
-                onChange={(v) => setMode(v as 'schema' | 'tryout')}
-              />
-            </div>
-          </div>
-
-          {/* ── Header Parameters ── */}
-          {headerParameters.length > 0 && (
-            <CollapsibleSection
-              title="Header Parameters"
-              badge={headerParameters.length}
-              defaultOpen
-            >
-              <ParameterTable
-                parameters={headerParameters}
-                mode={mode}
-                values={headerValues}
-                onChange={(name, val) =>
-                  setHeaderValues((prev) => ({ ...prev, [name]: val }))
-                }
-              />
-            </CollapsibleSection>
-          )}
-
-          {/* ── Query Parameters ── */}
-          {queryParameters.length > 0 && (
-            <CollapsibleSection
-              title="Query Parameters"
-              badge={queryParameters.length}
-              defaultOpen
-            >
-              <ParameterTable
-                parameters={queryParameters}
-                mode={mode}
-                values={queryValues}
-                onChange={(name, val) =>
-                  setQueryValues((prev) => ({ ...prev, [name]: val }))
-                }
-              />
-            </CollapsibleSection>
-          )}
-
-          {/* ── Request Body ── */}
-          {requestBodySchema && (
-            <CollapsibleSection
-              title="Request Body"
-              badge={requestBodyContentType}
-              defaultOpen
-            >
-              <SchemaVisualizer
-                schema={requestBodySchema}
-                definitions={requestBodyDefinitions}
-                mode={mode}
-                onTryoutChange={setSchemaTryoutValues}
-              />
-            </CollapsibleSection>
-          )}
-
-          {/* ── Responses ── */}
-          {responses.length > 0 && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionHeading}>Responses</h2>
-              <ResponseList responses={responses} />
-            </div>
-          )}
-        </div>
-
-        {/* ── Sticky code panel ── */}
-        <aside className={styles.codePanel}>
-
-          {/* Environment / host selector */}
-          {environments.length > 0 && (
-            <div className={styles.hostRow}>
-              <span className={styles.hostLabel}>Host</span>
-              <Dropdown
-                label={activeEnv?.label ?? 'Select environment'}
-                variant="secondary"
-                size="small"
-                fullWidth
-                popupWidth="trigger"
-                iconLeftName="Globe"
+            {/* Right: action buttons + mode toggle */}
+            <div className={styles.pathActions}>
+              <button
+                type="button"
+                className={styles.actionBtn}
+                onClick={handleCopyPage}
+                title="Copy page URL"
               >
-                {environments.map((env, i) => (
-                  <DropdownItem
-                    key={i}
-                    label={env.label}
-                    description={env.url}
-                    selected={i === envIndex}
-                    onClick={() => setEnvIndex(i)}
-                  />
-                ))}
-              </Dropdown>
-            </div>
-          )}
+                <Copy size={13} />
+                Copy Page
+              </button>
 
-          {/* TryoutPanel: EndpointBlock + ResponseBlock */}
-          <TryoutPanel
-            codeSamples={codeSamples}
-            defaultLanguage={defaultLanguage}
-            responses={sampleResponses}
-            onRun={onRun}
-          />
-        </aside>
+              <button
+                type="button"
+                className={styles.actionBtn}
+                onClick={onOpenInClaude}
+                title="Open in Claude"
+              >
+                <Sparkle size={13} weight="fill" />
+                Open in Claude
+                <ChevronDown size={11} weight="bold" />
+              </button>
+
+              <button
+                type="button"
+                className={styles.actionBtn}
+                onClick={onDownload}
+                title="Download spec"
+              >
+                <DownloadSimple size={13} />
+                Download
+              </button>
+
+              {/* View / Tryout toggle */}
+              <div className={styles.modeToggle} role="group" aria-label="View mode">
+                <button
+                  type="button"
+                  className={[styles.modeBtn, mode === 'schema' ? styles.modeBtnActive : ''].filter(Boolean).join(' ')}
+                  onClick={() => setMode('schema')}
+                  aria-pressed={mode === 'schema'}
+                >
+                  View
+                </button>
+                <button
+                  type="button"
+                  className={[styles.modeBtn, mode === 'tryout' ? styles.modeBtnActive : ''].filter(Boolean).join(' ')}
+                  onClick={() => setMode('tryout')}
+                  aria-pressed={mode === 'tryout'}
+                >
+                  Tryout
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* ── Two-column body ── */}
+        <div className={styles.cardBody}>
+
+          {/* Left: scrollable content */}
+          <main className={styles.contentCol}>
+
+            {/* Host / Environment selector */}
+            {environments.length > 0 && (
+              <div className={styles.hostSection}>
+                <span className={styles.hostIcon}>
+                  <Code size={20} />
+                </span>
+                <div className={styles.hostTextGroup}>
+                  <div className={styles.hostSectionLabel}>Host</div>
+                  {activeEnv && (
+                    <div className={styles.hostSectionSub}>{activeEnv.url}</div>
+                  )}
+                </div>
+                <div className={styles.hostDropdownWrap}>
+                  <Dropdown
+                    label={activeEnv?.label ?? 'Select environment'}
+                    variant="secondary"
+                    size="small"
+                    fullWidth
+                    popupWidth="trigger"
+                    align="end"
+                  >
+                    {environments.map((env, i) => (
+                      <DropdownItem
+                        key={i}
+                        label={env.label}
+                        description={env.url}
+                        selected={i === envIndex}
+                        onClick={() => setEnvIndex(i)}
+                      />
+                    ))}
+                  </Dropdown>
+                </div>
+              </div>
+            )}
+
+            {/* Header Parameters */}
+            {headerParameters.length > 0 && (
+              <CollapsibleSection
+                title="Header Parameters"
+                icon={<ListBullets size={16} />}
+                badge={headerParameters.length}
+                defaultOpen
+              >
+                <ParameterTable
+                  parameters={headerParameters}
+                  mode={mode}
+                  values={headerValues}
+                  onChange={(name, val) =>
+                    setHeaderValues((prev) => ({ ...prev, [name]: val }))
+                  }
+                />
+              </CollapsibleSection>
+            )}
+
+            {/* Query Parameters */}
+            {queryParameters.length > 0 && (
+              <CollapsibleSection
+                title="Query Parameters"
+                icon={<ListBullets size={16} />}
+                badge={queryParameters.length}
+                defaultOpen
+              >
+                <ParameterTable
+                  parameters={queryParameters}
+                  mode={mode}
+                  values={queryValues}
+                  onChange={(name, val) =>
+                    setQueryValues((prev) => ({ ...prev, [name]: val }))
+                  }
+                />
+              </CollapsibleSection>
+            )}
+
+            {/* Request Body */}
+            {requestBodySchema && (
+              <CollapsibleSection
+                title="Request Body"
+                icon={<ArrowSquareOut size={16} />}
+                badge={requestBodyContentType}
+                defaultOpen
+              >
+                <SchemaVisualizer
+                  schema={requestBodySchema}
+                  definitions={requestBodyDefinitions}
+                  mode={mode}
+                />
+              </CollapsibleSection>
+            )}
+
+            {/* Responses */}
+            {responses.length > 0 && (
+              <div className={styles.section}>
+                <h2 className={styles.sectionHeading}>Response</h2>
+                <ResponseList responses={responses} />
+              </div>
+            )}
+          </main>
+
+          {/* Right: sticky dark code panel */}
+          <aside className={styles.codeCol}>
+            <TryoutPanel
+              codeSamples={codeSamples}
+              defaultLanguage={defaultLanguage}
+              responses={sampleResponses}
+              onRun={onRun}
+            />
+          </aside>
+        </div>
       </div>
     </div>
   );
